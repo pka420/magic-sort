@@ -18,11 +18,11 @@ describe('the magic-sort worker', () => {
     )
 
     const response = await worker.fetch(
-      visit('https://www.matpoli.dev/magic-sort/assets/app.js')
+      visit('https://www.pka420.github.io/magic-sort/assets/app.js')
     )
 
     expect(await response.text()).toBe(
-      'https://matheus-poli.github.io/magic-sort/assets/app.js'
+      'https://pka420.github.io/magic-sort/assets/app.js'
     )
   })
 
@@ -32,16 +32,16 @@ describe('the magic-sort worker', () => {
       async () =>
         new Response(null, {
           status: 301,
-          headers: { location: 'https://matheus-poli.github.io/magic-sort/' }
+          headers: { location: 'https://pka420.github.io/magic-sort/' }
         })
     )
 
     const response = await worker.fetch(
-      visit('https://www.matpoli.dev/magic-sort')
+      visit('https://www.pka420.github.io/magic-sort')
     )
 
     expect(response.headers.get('location')).toBe(
-      'https://www.matpoli.dev/magic-sort/'
+      'https://www.pka420.github.io/magic-sort/'
     )
   })
 
@@ -56,7 +56,7 @@ describe('the magic-sort worker', () => {
     )
 
     const response = await worker.fetch(
-      visit('https://www.matpoli.dev/magic-sort/')
+      visit('https://www.pka420.github.io/magic-sort/')
     )
 
     expect({

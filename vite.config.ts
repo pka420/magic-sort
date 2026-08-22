@@ -5,9 +5,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   // The game is served from a path, never from the root of a domain: GitHub
-  // Pages publishes it under the repository name, and Cloudflare routes the
-  // same path on matpoli.dev to it. Asset URLs have to carry that prefix or the
-  // browser looks for them at the domain root and finds nothing.
+  // Pages publishes it under the repository name. Asset URLs have to carry that
+  // prefix or the browser looks for them at the domain root and finds nothing.
   base: '/magic-sort/',
   plugins: [react()],
   test: {

@@ -14,9 +14,21 @@
   // zone keeps being served by it. Both hostnames are listed because both
   // currently answer, and a visitor who types either should reach the game.
   "routes": [
-    { "pattern": "matpoli.dev/magic-sort", "zone_name": "matpoli.dev" },
-    { "pattern": "matpoli.dev/magic-sort/*", "zone_name": "matpoli.dev" },
-    { "pattern": "www.matpoli.dev/magic-sort", "zone_name": "matpoli.dev" },
-    { "pattern": "www.matpoli.dev/magic-sort/*", "zone_name": "matpoli.dev" }
+    {
+      "pattern": "pka420.github.io/magic-sort",
+      "zone_name": "pka420.github.io"
+    },
+    {
+      "pattern": "pka420.github.io/magic-sort/*",
+      "zone_name": "pka420.github.io"
+    },
+    {
+      "pattern": "www.pka420.github.io/magic-sort",
+      "zone_name": "pka420.github.io"
+    },
+    {
+      "pattern": "www.pka420.github.io/magic-sort/*",
+      "zone_name": "pka420.github.io"
+    }
   ]
 }

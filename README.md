@@ -129,7 +129,7 @@ Install them once with `sudo npx playwright install-deps chromium`.
 
 ## Deploying
 
-The game is played at **<https://www.matpoli.dev/magic-sort/>**, and it is free
+The game is played at **<https://www./magic-sort/>**, and it is free
 to host: static files on GitHub Pages, with Cloudflare lending the path.
 
 Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml),
@@ -165,7 +165,7 @@ First-time setup, done once each:
 - **Settings → Pages → Source: GitHub Actions**, in the repository.
 - `npx wrangler login`, then the deploy command above.
 
-The Pages URL, <https://matheus-poli.github.io/magic-sort/>, keeps working and
+The Pages URL, <https:///magic-sort/>, keeps working and
 serves the same build. It is the origin the proxy reads from, so it cannot be
 hidden, only ignored.
 

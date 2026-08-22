@@ -143,54 +143,6 @@ body::before {
   height: clamp(2.1rem, 5.5vw, 2.9rem);
 }
 
-/* ---------- Colour-blind mode ---------- */
-
-/* Opposite the wordmark, where a settings control is looked for. */
-.colour-aid {
-  position: fixed;
-  z-index: 10;
-  top: clamp(0.75rem, 2vw, 1.25rem);
-  right: clamp(0.75rem, 2vw, 1.25rem);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.7rem;
-  font-family: var(--ui);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--parchment-dim);
-  background: rgba(23, 14, 44, 0.72);
-  border: 1px solid rgba(185, 139, 255, 0.28);
-  border-radius: 999px;
-  cursor: pointer;
-  transition:
-    color 0.25s var(--ease-out),
-    border-color 0.25s var(--ease-out);
-}
-
-.colour-aid:hover,
-.colour-aid:focus-visible {
-  color: var(--parchment);
-  border-color: var(--rune);
-}
-
-.colour-aid:focus-visible {
-  outline: 2px solid var(--rune-bright);
-  outline-offset: 3px;
-}
-
-.colour-aid[aria-pressed='true'] {
-  color: var(--ink);
-  background: var(--rune-bright);
-  border-color: var(--rune-bright);
-}
-
-.colour-aid__marks {
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-}
-
 /* ---------- Header ---------- */
 
 .game__header {

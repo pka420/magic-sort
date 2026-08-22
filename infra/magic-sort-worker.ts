@@ -1,11 +1,10 @@
 /**
  * The game is published by GitHub Pages, but players reach it at a path on
- * matpoli.dev, where the personal site already answers everything else.
- * Cloudflare routes that one path here, and this hands the request to Pages
- * unchanged apart from the hostname — the repository is named after the public
- * path, so the path itself is identical on both sides.
+ * the custom domain. Cloudflare routes that one path here, and this hands the
+ * request to Pages unchanged apart from the hostname — the repository is named
+ * after the public path, so the path itself is identical on both sides.
  */
-const PAGES_HOST = 'matheus-poli.github.io'
+const PAGES_HOST = 'pka420.github.io'
 
 export default {
   async fetch(request: Request): Promise<Response> {
