@@ -81,16 +81,6 @@ A run that ends is erased rather than zeroed — every point and every bench, go
 card is answered, because closing the tab must not be a way out of a run that is
 already over either.
 
-Colour-blind mode is in the top-right corner, and the game remembers it. It
-retunes the elixirs to a palette measured against protanopia, deuteranopia and
-tritanopia and compared by CIEDE2000 — the closest pair anyone then sees is
-ΔE 11.9, against 5.9 for the atelier's own colours, where a tritanope sees azure
-and verdant as very nearly one elixir — and marks every layer with a sigil of
-its own, because eight colours cannot be told apart by colour alone whatever the
-palette. The two elixirs the late shelves add were picked by the same
-measurement, and cost the atelier's palette nothing: its closest pair is the one
-it always had.
-
 ## Getting set up
 
 The toolchain is pinned with [mise](https://mise.jdx.dev), so everyone builds

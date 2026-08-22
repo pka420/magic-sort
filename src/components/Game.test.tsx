@@ -105,7 +105,6 @@ interface Standing {
   readonly bankedScore?: number
   readonly perfectTotal?: number
   readonly forfeited?: number
-  readonly colourBlind?: boolean
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
   readonly onStartOver?: (score: number) => void
@@ -122,7 +121,6 @@ const showBench = (level: Level, standing: Standing = {}) =>
       bankedScore={standing.bankedScore ?? 0}
       perfectTotal={standing.perfectTotal ?? 5000}
       forfeited={standing.forfeited ?? 0}
-      colourBlind={standing.colourBlind ?? false}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
       onStartOver={standing.onStartOver ?? (() => {})}
@@ -262,17 +260,6 @@ describe('Game', () => {
 
     expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
     expect(flask(3)).toHaveAttribute('aria-pressed', 'true')
-  })
-
-  it('gives every elixir a mark of its own in colour-blind mode', () => {
-    showBench(oneOfEach, { colourBlind: true })
-
-    // Each flask holds one layer, so what it shows is that elixir's mark.
-    const marks = oneOfEach.board.map(
-      (_, index) => flask(index + 1).textContent
-    )
-
-    expect(marks).toEqual([...new Set(marks)])
   })
 
   it('leaves the elixirs unmarked while the colours are enough', () => {

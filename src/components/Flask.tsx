@@ -16,21 +16,6 @@ type FlaskContents = readonly Elixir[]
  * all is left with pairs at almost the same lightness. A silhouette has none of
  * those failure modes.
  */
-const SIGILS: Record<Elixir, string> = {
-  crimson: '▲',
-  azure: '▼',
-  verdant: '●',
-  amber: '★',
-  // A square rather than a diamond: at the size a phone draws a layer, a
-  // diamond is another angular blob among the triangles.
-  violet: '■',
-  pearl: '✚',
-  // The two the late shelves add. A hexagon reads as its own shape beside the
-  // circle at layer size, and a crescent is the only mark here with a hollow.
-  saffron: '⬢',
-  indigo: '☾'
-}
-
 /**
  * How long poured elixir takes to settle. The confetti and the wobble wait for
  * it, and the golden seal is held back by the same delay in CSS: celebrating
@@ -45,7 +30,6 @@ interface FlaskProps {
   /** Layers this flask's own glass holds when full, which sets how tall it is. */
   readonly capacity: number
   /** Whether each layer carries its elixir's sigil as well as its colour. */
-  readonly sigils: boolean
   readonly isSelected: boolean
   /** Tap sequence of the pour this flask just refused, or null. */
   readonly refusedAt: number | null
@@ -58,7 +42,6 @@ export function Flask({
   position,
   contents,
   capacity,
-  sigils,
   isSelected,
   refusedAt,
   onTap,
@@ -135,11 +118,6 @@ export function Flask({
               >
                 {/* Hidden from screen readers: the flask's own label already
                     names every elixir it holds, in order. */}
-                {sigils && (
-                  <span className='flask__sigil' aria-hidden='true'>
-                    {SIGILS[elixir]}
-                  </span>
-                )}
               </motion.span>
             ))}
           </AnimatePresence>
