@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { GameOver } from './GameOver'
 import { HoldToRestart } from './HoldToRestart'
+import { SpeedSlider } from './SpeedSlider'
 import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
@@ -69,6 +70,7 @@ export function Game({
   const game = useGame(level, worth)
   useGameSounds(game)
   const sortedId = useId()
+  const [speed, setSpeed] = useState(1)
 
   /*
    * A run ended by a price the apprentice could not pay. It is remembered here
@@ -84,7 +86,8 @@ export function Game({
     selectedIndex: game.selectedIndex,
     bench,
     slots,
-    onTap: game.tapFlask
+    onTap: game.tapFlask,
+    speed
   })
 
   useEffect(() => {
@@ -201,6 +204,7 @@ export function Game({
                   : null
               }
               onTap={() => pour.tapFlask(index)}
+              speed={speed}
             />
           </li>
         ))}
@@ -222,10 +226,12 @@ export function Game({
             initial={{ scaleY: 0, opacity: 1 }}
             animate={{ scaleY: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: 'easeIn' }}
+            transition={{ duration: 0.15 / speed, ease: 'easeIn' }}
           />
         )}
       </ol>
+
+      <SpeedSlider speed={speed} onSpeedChange={setSpeed} />
 
       <div className='undo'>
         <HoldToRestart

@@ -61,6 +61,8 @@ interface PourFlightProps {
   readonly slots: RefObject<(HTMLElement | null)[]>
   /** Hands the tap on to the game once the elixir has somewhere to land. */
   readonly onTap: (index: number) => void
+  /** Animation speed multiplier: 0.5x to 3x. */
+  readonly speed: number
 }
 
 export function usePourFlight({
@@ -68,7 +70,8 @@ export function usePourFlight({
   selectedIndex,
   bench,
   slots,
-  onTap
+  onTap,
+  speed
 }: PourFlightProps) {
   const [stream, setStream] = useState<Stream | null>(null)
   const inFlight = useRef<Pouring | null>(null)
@@ -111,8 +114,13 @@ export function usePourFlight({
         return
       }
 
-      const pouring = pourOver(flask, filling, flight, setStream, () =>
-        onTap(index)
+      const pouring = pourOver(
+        flask,
+        filling,
+        flight,
+        setStream,
+        () => onTap(index),
+        speed
       )
       inFlight.current = pouring
 
@@ -122,7 +130,7 @@ export function usePourFlight({
         if (inFlight.current === pouring) inFlight.current = null
       })
     },
-    [board, selectedIndex, bench, slots, onTap]
+    [board, selectedIndex, bench, slots, onTap, speed]
   )
 
   return { tapFlask, stream }
@@ -139,7 +147,8 @@ function pourOver(
   filling: HTMLElement,
   flight: Flight,
   showStream: (stream: Stream | null) => void,
-  settle: () => void
+  settle: () => void,
+  speed: number
 ): Pouring {
   let travelling: AnimationPlaybackControls | null = null
   let landed = false
@@ -187,21 +196,21 @@ function pourOver(
     travelling = animate(
       flask,
       { x: flight.x, y: flight.y, rotate: flight.rotate },
-      { duration: LIFT_SECONDS, ease: [0.32, 0.72, 0.35, 1] }
+      { duration: LIFT_SECONDS / (speed * 2), ease: [0.32, 0.72, 0.35, 1] }
     )
     await travelling.finished
     if (cut) return
 
     land()
     showStream(flight.stream)
-    await wait(STREAM_SECONDS + DRAIN_SECONDS)
+    await wait((STREAM_SECONDS + DRAIN_SECONDS) / (speed * 2))
     if (cut) return
     showStream(null)
 
     travelling = animate(
       flask,
       { x: 0, y: 0, rotate: 0 },
-      { duration: RETURN_SECONDS, ease: [0.32, 0.72, 0.35, 1] }
+      { duration: RETURN_SECONDS / (speed * 2), ease: [0.32, 0.72, 0.35, 1] }
     )
     await travelling.finished
     if (cut) return

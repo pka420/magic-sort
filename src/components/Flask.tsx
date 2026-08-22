@@ -50,6 +50,8 @@ interface FlaskProps {
   /** Tap sequence of the pour this flask just refused, or null. */
   readonly refusedAt: number | null
   readonly onTap: () => void
+  /** Animation speed multiplier: 0.5x to 3x. */
+  readonly speed: number
 }
 
 export function Flask({
@@ -59,7 +61,8 @@ export function Flask({
   sigils,
   isSelected,
   refusedAt,
-  onTap
+  onTap,
+  speed
 }: FlaskProps) {
   const [scope, animate] = useAnimate()
   const [glassScope, animateGlass] = useAnimate()
@@ -71,24 +74,27 @@ export function Flask({
     animate(
       scope.current,
       { x: [0, -9, 9, -6, 6, 0] },
-      { duration: 0.36, ease: 'easeInOut' }
+      { duration: 0.36 / (speed * 2), ease: 'easeInOut' }
     )
-  }, [refusedAt, animate, scope])
+  }, [refusedAt, animate, scope, speed])
 
   useEffect(() => {
     if (!sealed) return
 
-    const settling = setTimeout(() => {
-      celebrateFlask(scope.current)
-      animateGlass(
-        glassScope.current,
-        { rotate: [0, -7, 6, -4, 2, 0], scale: [1, 1.07, 1.02, 1] },
-        { duration: 0.7, ease: 'easeOut' }
-      )
-    }, SETTLE_MS)
+    const settling = setTimeout(
+      () => {
+        celebrateFlask(scope.current)
+        animateGlass(
+          glassScope.current,
+          { rotate: [0, -7, 6, -4, 2, 0], scale: [1, 1.07, 1.02, 1] },
+          { duration: 0.7 / (speed * 2), ease: 'easeOut' }
+        )
+      },
+      SETTLE_MS / (speed * 2)
+    )
 
     return () => clearTimeout(settling)
-  }, [sealed, animateGlass, glassScope, scope])
+  }, [sealed, animateGlass, glassScope, scope, speed])
 
   return (
     <motion.button
@@ -108,14 +114,10 @@ export function Flask({
       aria-label={describeFlask(position, contents, capacity)}
       onClick={onTap}
       animate={{ y: isSelected ? -22 : 0 }}
-      whileHover={{ y: isSelected ? -26 : -6 }}
       whileTap={{ scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 420, damping: 26 }}
     >
       <span ref={glassScope} className='flask__bottle'>
-        <span className='flask__cork' aria-hidden='true' />
-        <span className='flask__neck' aria-hidden='true' />
-        <span className='flask__shoulder' aria-hidden='true' />
         <span className='flask__body'>
           <AnimatePresence initial={false}>
             {contents.map((elixir, layer) => (
@@ -126,7 +128,10 @@ export function Flask({
                 initial={{ height: 0 }}
                 animate={{ height: layerHeight }}
                 exit={{ height: 0 }}
-                transition={{ duration: 0.19, ease: [0.3, 0.9, 0.4, 1] }}
+                transition={{
+                  duration: 0.19 / speed,
+                  ease: [0.3, 0.9, 0.4, 1]
+                }}
               >
                 {/* Hidden from screen readers: the flask's own label already
                     names every elixir it holds, in order. */}
@@ -139,7 +144,6 @@ export function Flask({
             ))}
           </AnimatePresence>
         </span>
-        <span className='flask__shine' aria-hidden='true' />
       </span>
     </motion.button>
   )

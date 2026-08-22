@@ -181,6 +181,6 @@ function tap(bench: Bench, index: number): Bench {
 
 function pickUp(board: Board, index: number): number | null {
   const flask = board[index]
-  if (flask === undefined || isEmpty(flask)) return null
+  if (flask === undefined || isEmpty(flask) || isComplete(flask)) return null
   return index
 }

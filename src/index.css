@@ -335,7 +335,7 @@ body::before {
   width: 0.45rem;
   margin-left: -0.225rem;
   transform-origin: top center;
-  border-radius: 0 0 40% 40%;
+  border-radius: 0 0 50% 50%;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--elixir) 70%, white),
@@ -381,21 +381,11 @@ body::before {
    * has to be taller, not more finely divided.
    */
   --layer-height: calc(var(--glass-base) * 0.43);
-  /*
-   * A glassblower given the same gather of glass blows a short vial fat and a
-   * tall flask slender, so the two are told apart by shape before anyone counts
-   * layers. The four-layer flask is the shape the atelier is drawn around, and
-   * the others lean away from it.
-   */
   --glass-girth: 1;
   --flask-width: calc(var(--glass-base) * var(--glass-girth));
-  /* The belly: rounder and lower-slung on the vials, straighter on the tall. */
-  --glass-belly: 46% 46% 44% 44% / 32% 32% 42% 42%;
-  --glass-shoulder: 66%;
 
   position: relative;
-  /* Keeps the bottle's internal layering to itself, so a belly stacked above a
-     shoulder can never outrank a page-level overlay. */
+  /* Keeps the bottle's internal layering to itself. */
   isolation: isolate;
   width: var(--flask-width);
   padding: 0;
@@ -411,38 +401,17 @@ body::before {
   border-radius: 1.5rem;
 }
 
-/* The stout vial: wide, round-bellied, and barely taller than it is broad. */
-.flask[data-glass='3'] {
-  --glass-girth: 1.18;
-  --glass-belly: 50% 50% 48% 48% / 26% 26% 52% 52%;
-  --glass-shoulder: 60%;
-}
-
-/* The tall flask: drawn in, with a long straight belly. */
-.flask[data-glass='5'] {
-  --glass-girth: 0.87;
-  --glass-belly: 42% 42% 40% 40% / 24% 24% 32% 32%;
-  --glass-shoulder: 72%;
-}
-
-/*
- * The deep glass and the decanter, each drawn narrower than the last. The
- * silhouette has to keep saying how much a glass holds without anyone counting
- * layers, and by seven the bottle is nearly a column.
- */
-.flask[data-glass='6'] {
-  --glass-girth: 0.8;
-  --glass-belly: 38% 38% 36% 36% / 20% 20% 26% 26%;
-  --glass-shoulder: 76%;
-}
-
+/* All flasks share the same test-tube (cylindrical) silhouette so that
+   every layer reads as the same visual height regardless of capacity. */
+.flask[data-glass='3'],
+.flask[data-glass='4'],
+.flask[data-glass='5'],
+.flask[data-glass='6'],
 .flask[data-glass='7'] {
-  --glass-girth: 0.74;
-  --glass-belly: 34% 34% 32% 32% / 17% 17% 22% 22%;
-  --glass-shoulder: 80%;
+  --glass-girth: 1;
 }
 
-/* Cork, neck, shoulder and belly, stacked into a potion bottle. */
+/* The glass body: a straight cylinder with a rounded bottom and an open top. */
 .flask__bottle {
   position: relative;
   display: flex;
@@ -450,75 +419,22 @@ body::before {
   align-items: center;
 }
 
-/*
- * A flask is corked when it is finished, never before: the cork is the seal on
- * a sorted elixir, so a bottle still being worked on stands open. Its space is
- * held all along and only its paint comes and goes, so nothing on the bench
- * shifts at the moment one is stoppered — and it waits out the same settle
- * delay as the golden rim, so the seal lands with the elixir.
- */
-.flask__cork {
-  width: 36%;
-  height: 0.62rem;
-  border-radius: 0.28rem 0.28rem 0.1rem 0.1rem;
-  background: linear-gradient(180deg, #d0a068 0%, #a06f3e 55%, #7a5130 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 240, 210, 0.45),
-    0 2px 5px rgba(0, 0, 0, 0.45);
-  opacity: 0;
-  transform: translateY(0.3rem) scale(0.8);
-  transition:
-    opacity 0.3s var(--ease-out) 0.19s,
-    transform 0.3s var(--ease-out) 0.19s;
-}
-
-.flask[data-sealed='true'] .flask__cork {
-  opacity: 1;
-  transform: none;
-}
-
-.flask__neck {
-  width: 33%;
-  height: 0.85rem;
-  border-inline: 2px solid var(--glass-edge);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.14),
-    var(--glass-fill)
-  );
-}
-
-/*
- * The flare from the narrow neck out to the belly. It sits behind the belly, so
- * only the sloping edges show and it never draws over the elixir.
- */
-.flask__shoulder {
-  position: relative;
-  z-index: 0;
-  width: var(--glass-shoulder);
-  height: 0.9rem;
-  margin-bottom: -0.6rem;
-  background: linear-gradient(
-    180deg,
-    rgba(226, 214, 255, 0.28),
-    rgba(146, 122, 214, 0.16)
-  );
-  clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%);
-}
-
 .flask__body {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column-reverse;
-  width: 100%;
+  width: 50%;
   height: calc(var(--layer-height) * var(--layers));
   overflow: hidden;
   border: 2px solid var(--glass-edge);
-  border-radius: var(--glass-belly);
+  border-top: none;
+  border-radius: 0 0 50% 50%;
   background: var(--glass-fill);
   box-shadow:
-    inset 0 -14px 30px rgba(0, 0, 0, 0.42),
+    inset 4px 0 8px rgba(180, 255, 220, 0.2),
+    inset -4px 0 8px rgba(0, 20, 40, 0.4),
+    inset 0 -12px 18px rgba(0, 10, 30, 0.5),
     0 16px 30px rgba(0, 0, 0, 0.5);
   transition: box-shadow 0.35s var(--ease-out);
 }
@@ -725,25 +641,6 @@ body::before {
   --elixir: var(--indigo);
 }
 
-/* A single specular highlight sells the curve of the glass. */
-.flask__shine {
-  position: absolute;
-  z-index: 2;
-  bottom: 18%;
-  left: 16%;
-  width: 0.32rem;
-  height: 34%;
-  border-radius: 999px;
-  rotate: 8deg;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.42),
-    rgba(255, 255, 255, 0)
-  );
-  filter: blur(0.6px);
-  pointer-events: none;
-}
-
 .flask[data-selected='true'] .flask__body {
   border-color: var(--rune-bright);
   box-shadow:
@@ -774,22 +671,22 @@ body::before {
  * bench seals eight. Opacity is the compositor's to animate, so this costs
  * nothing to breathe.
  *
- * It traces the belly from the same tokens the belly is drawn from, so the
+ * It traces the body from the same radius the body is drawn from, so the
  * two cannot drift apart.
  */
-.flask__bottle::after {
+.flask__body::after {
   content: '';
   position: absolute;
   inset: auto 0 0 0;
-  height: calc(var(--layer-height) * var(--layers));
-  border-radius: var(--glass-belly);
+  height: 100%;
+  border-radius: 0 0 50% 50%;
   box-shadow: 0 0 44px rgba(255, 200, 107, 0.75);
   opacity: 0;
   pointer-events: none;
 }
 
 /* Held back by the settle delay, the same as the glass it wraps. */
-.flask[data-sealed='true'] .flask__bottle::after {
+.flask[data-sealed='true'] .flask__body::after {
   animation: sealed-pulse 2.4s var(--ease-out) 0.19s infinite;
 }
 
@@ -882,6 +779,65 @@ body::before {
   background: none;
   color: var(--parchment);
   box-shadow: none;
+}
+
+/* ---------- Speed control ---------- */
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.5rem 0;
+}
+
+.speed-control__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
+}
+
+.speed-control__slider {
+  width: 8rem;
+  height: 4px;
+  appearance: none;
+  background: var(--glass-edge);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.speed-control__slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--rune);
+  cursor: pointer;
+  transition: background 0.15s var(--ease-out);
+}
+
+.speed-control__slider::-webkit-slider-thumb:hover {
+  background: var(--rune-bright);
+}
+
+.speed-control__slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--rune);
+  cursor: pointer;
+}
+
+.speed-control__value {
+  min-width: 2.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--parchment);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Taking something back ---------- */
