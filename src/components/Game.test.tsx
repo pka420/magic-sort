@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -480,6 +480,42 @@ describe('Game', () => {
 
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.keyboard('{Escape}')
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText('Animation speed')).not.toBeInTheDocument()
+    )
+  })
+
+  /*
+   * A tool spent is a tool with nothing left to hold the drawer open for:
+   * pressing the restart, or settling on a speed, closes the drawer behind
+   * the hand rather than leaving it over the board.
+   */
+  it('closes the menu behind a restart the player pays for', async () => {
+    const user = userEvent.setup()
+    showLevel(level, { bankedScore: 100 })
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(screen.getByRole('button', { name: 'Restart' }))
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText('Animation speed')).not.toBeInTheDocument()
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Restart' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('closes the menu once a speed is settled on', async () => {
+    const user = userEvent.setup()
+    showLevel(level)
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    // The browser's own change, fired when the value commits — the drawer
+    // stays open through the drag that leads up to it.
+    fireEvent.change(screen.getByLabelText('Animation speed'), {
+      target: { value: '2' }
+    })
 
     await waitFor(() =>
       expect(screen.queryByLabelText('Animation speed')).not.toBeInTheDocument()

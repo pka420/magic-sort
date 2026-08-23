@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { playSound } from '../audio/sounds'
+import { useMenuClose } from './Menu'
 
 interface RestartProps {
   readonly onRestart: () => void
@@ -30,6 +31,7 @@ export function Restart({
   wouldEndTheRun
 }: RestartProps) {
   const costId = useId()
+  const closeMenu = useMenuClose()
 
   return (
     <div className='restart'>
@@ -40,6 +42,9 @@ export function Restart({
         onClick={() => {
           if (!wouldEndTheRun) playSound('reset')
           onRestart()
+          /* The restart is spent the moment it is pressed, so the drawer
+             closes behind it rather than waiting to be tidied away. */
+          closeMenu()
         }}
       >
         Restart

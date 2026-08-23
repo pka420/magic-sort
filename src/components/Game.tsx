@@ -127,21 +127,25 @@ export function Game({
 
   return (
     <main className='game'>
-      <header className='game__header'>
-        <h1 className='game__title'>Magic Sort</h1>
-        <p className='game__level'>
-          Level {position} of {levelCount}
-        </p>
-      </header>
+      {/* The title and the score share one hanging cluster at the top of
+          the screen: the name above, the numbers under it. */}
+      <div className='hud'>
+        <header className='game__header'>
+          <h1 className='game__title'>Magic Sort</h1>
+          <p className='game__level'>
+            Level {position} of {levelCount}
+          </p>
+        </header>
 
-      <ScoreBoard
-        score={game.score}
-        worth={worth}
-        totalScore={total}
-        perfectTotal={perfectTotal}
-        pours={game.pours}
-        minimumPours={level.minimumPours}
-      />
+        <ScoreBoard
+          score={game.score}
+          worth={worth}
+          totalScore={total}
+          perfectTotal={perfectTotal}
+          pours={game.pours}
+          minimumPours={level.minimumPours}
+        />
+      </div>
 
       <ol className='bench' aria-label='Flasks' ref={flasksRef}>
         {game.board.map((flask, index) => (
