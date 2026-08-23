@@ -254,23 +254,6 @@ recipes: the rebirth and the end of a run are recorded tracks at
 `src/audio/revive.mp3` and `defeat.mp3`, and the generator has no entry for them
 so that re-running it cannot overwrite them.
 
-## Roadmap
-
-The game ships in vertical slices — each one playable on its own.
-
-- [x] **Slice 1** — one level, pouring, scoring, sound, animation, win state.
-- [x] **Slice 2** — ten levels across two tiers, progression between them, a
-      score out of 1000.
-- [x] **Slice 3** — fourteen levels, a tier per mechanic, flasks that carry
-      their own glass size, and a pour that tips and falls.
-- [x] **Slice 4** — a run that survives the tab closing, sealed against editing,
-      and a start over that costs points rather than everything.
-- [x] **Slice 5** — fifty levels measured by the possibilities they open, two
-      more elixirs, levels whose room is scattered rather than pooled, a level
-      worth more than the one before it, and a run that can end in ruin.
-- [ ] **Slice 6** — undo.
-- [ ] **Slice 7** — ingredient collection, boosts.
-
 ## Conventions
 
 Everything in this repository is written in English. Commits follow
