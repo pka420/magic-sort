@@ -58,19 +58,6 @@ describe('GameOver', () => {
     )
   })
 
-  it('tells the apprentice who set off back what the walk cost', () => {
-    render(
-      <GameOver
-        ending={{ kind: 'rebirth', price: 45000 }}
-        onBeginAgain={vi.fn()}
-      />
-    )
-
-    expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'The walk back to the first bench costs 45000 points, which is more than you have.'
-    )
-  })
-
   it('marks the end of the run with a sound of its own', () => {
     showCard()
 
@@ -78,10 +65,11 @@ describe('GameOver', () => {
   })
 
   /*
-   * The rebirth is a recorded track that Howler only fetches when it is first
-   * played, so it is asked for while the apprentice is still reading the card.
+   * The next run opens on a recorded track that Howler only fetches when it is
+   * first played, so it is asked for while the apprentice is still reading
+   * the card.
    */
-  it('fetches the rebirth sound while the apprentice takes the news in', () => {
+  it('fetches the next run’s sound while the apprentice takes the news in', () => {
     showCard()
 
     expect(vi.mocked(warmSound).mock.calls).toEqual([['revive']])
@@ -102,7 +90,7 @@ describe('GameOver', () => {
     expect(onBeginAgain).toHaveBeenCalledTimes(1)
   })
 
-  it('sounds the rebirth as the new run opens', async () => {
+  it('sounds the new run opening', async () => {
     const user = userEvent.setup()
     showCard()
 

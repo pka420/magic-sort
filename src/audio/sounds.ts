@@ -1,5 +1,4 @@
 import { Howl } from 'howler'
-import chargeUrl from './charge.wav'
 import completeUrl from './complete.wav'
 import pickupUrl from './pickup.wav'
 import pourUrl from './pour.wav'
@@ -16,7 +15,6 @@ export type SoundName =
   | 'pour'
   | 'refused'
   | 'complete'
-  | 'charge'
   | 'reset'
   | 'revive'
   | 'defeat'
@@ -27,7 +25,6 @@ const sources: Record<SoundName, string> = {
   pour: pourUrl,
   refused: refusedUrl,
   complete: completeUrl,
-  charge: chargeUrl,
   reset: resetUrl,
   revive: reviveUrl,
   defeat: defeatUrl,
@@ -45,22 +42,14 @@ export function playSound(name: SoundName): void {
 }
 
 /**
- * Fetches a sound before anything asks to hear it, for the one that must not
+ * Fetches a sound before anything asks to hear it, for the ones that must not
  * be late. Loading on first play is the right bargain almost everywhere, but
- * the rebirth is a recorded track rather than a short synthesised one, and
- * fetching it at the moment of the click put the sound audibly behind it.
+ * the recorded tracks are longer than the synthesised ones, and fetching one
+ * at the moment of the click put the sound audibly behind it.
  */
 export function warmSound(name: SoundName): void {
   if (!isAudioAvailable) return
   soundFor(name)
-}
-
-/**
- * Cuts a sound off mid-play, for the one that is not an event but a state: the
- * restart charging up, which has to fall silent the moment the hold is let go.
- */
-export function stopSound(name: SoundName): void {
-  loaded.get(name)?.stop()
 }
 
 // Loading on first play keeps the initial page weight down and sidesteps

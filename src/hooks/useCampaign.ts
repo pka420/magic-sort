@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  benchWorth,
-  perfectTotal,
-  priceOfRebirth,
-  priceOfRestart
-} from '../domain/scoring'
+import { benchWorth, perfectTotal, priceOfRestart } from '../domain/scoring'
 import {
   forgetSavedRun,
   readSavedRun,
@@ -33,12 +28,6 @@ export interface Campaign {
   advance: (scoreEarned: number) => void
   /** Charges for throwing a bench away and starting it again. */
   chargeForRestart: () => void
-  /**
-   * Sends the apprentice back to the first bench, points kept, for a price.
-   * Banks what the bench in hand earned on the way out, since they are leaving
-   * it for good rather than laying it out again.
-   */
-  startOver: (scoreEarned: number) => void
   /** Erases the run and opens one from nothing, points and bench alike. */
   beginAgain: () => void
 }
@@ -47,6 +36,11 @@ interface Progress {
   readonly reached: number
   readonly earned: number
   readonly forfeited: number
+  /**
+   * No longer raised by anything: the walk back to the first bench is gone.
+   * It survives the round trip because saved runs carry it, and the ceiling on
+   * the scoreboard has to keep reading against what a save says it was.
+   */
   readonly rebirths: number
 }
 
@@ -86,25 +80,6 @@ export function useCampaign(levels: readonly Level[]): Campaign {
   }, [])
 
   /*
-   * A rebirth rather than a wipe: the apprentice walks back to the first bench
-   * carrying every point they earned, and pays for the walk. Wiping the score
-   * made this button one nobody could afford to press.
-   *
-   * The price is the atelier behind them, so the benches they are walking back
-   * to can never pay for the walk — the deeper in they are, the more the way
-   * back costs, and it can leave them owing more than they have.
-   */
-  const startOver = useCallback((scoreEarned: number) => {
-    setProgress((current) => ({
-      ...current,
-      reached: 0,
-      earned: current.earned + scoreEarned,
-      forfeited: current.forfeited + priceOfRebirth(current.reached + 1),
-      rebirths: current.rebirths + 1
-    }))
-  }, [])
-
-  /*
    * The save is wiped rather than written over. An apprentice throwing a run
    * away is asking to be gone from the machine, and a bench left in the save
    * would otherwise be waiting for them at the next reload.
@@ -138,7 +113,6 @@ export function useCampaign(levels: readonly Level[]): Campaign {
     }),
     advance,
     chargeForRestart,
-    startOver,
     beginAgain
   }
 }

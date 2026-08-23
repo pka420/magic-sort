@@ -2,22 +2,15 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { GameOver } from './GameOver'
-import { HoldToRestart } from './HoldToRestart'
+import { Restart } from './Restart'
 import { SpeedSlider } from './SpeedSlider'
-import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { usePourFlight } from '../hooks/usePourFlight'
 import { celebrateLevel } from '../effects/confetti'
 import { endOfRun } from '../domain/runsEnd'
-import {
-  canPayForRebirth,
-  canPayForRestart,
-  priceOfRebirth,
-  priceOfRestart,
-  totalScore
-} from '../domain/scoring'
+import { canPayForRestart, priceOfRestart, totalScore } from '../domain/scoring'
 import type { CSSProperties } from 'react'
 import type { Level } from '../domain/levels'
 import type { RunsEnd } from '../domain/runsEnd'
@@ -31,7 +24,7 @@ interface GameProps {
   readonly worth: number
   /** Points earned on the benches before this one, less what restarts cost. */
   readonly bankedScore: number
-  /** The ceiling those points climb towards, which a rebirth raises. */
+  /** The ceiling those points climb towards, as saved campaigns left it. */
   readonly perfectTotal: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
@@ -42,11 +35,6 @@ interface GameProps {
   readonly onNextLevel: ((score: number) => void) | null
   /** Tells the campaign a bench was thrown away, so it can charge for it. */
   readonly onRestart: () => void
-  /**
-   * Walks the apprentice back to the first bench, taking what the bench in hand
-   * earned: they are leaving it for good, so the campaign banks it on the way.
-   */
-  readonly onStartOver: (score: number) => void
   /** Opens a run from nothing, for an apprentice with nothing left. */
   readonly onBeginAgain: () => void
 }
@@ -61,7 +49,6 @@ export function Game({
   forfeited,
   onNextLevel,
   onRestart,
-  onStartOver,
   onBeginAgain
 }: GameProps) {
   const game = useGame(level, worth)
@@ -94,9 +81,7 @@ export function Game({
   const total = totalScore({ banked: bankedScore, bench: game.score })
   const isLastBench = onNextLevel === null
   const restartPrice = priceOfRestart(position)
-  const rebirthPrice = priceOfRebirth(position)
   const canRestart = canPayForRestart({ banked: bankedScore, position })
-  const canWalkBack = canPayForRebirth({ total, position })
 
   /*
    * The ending nobody pressed for is asked after on every render rather than
@@ -138,29 +123,6 @@ export function Game({
     game.restart()
     onRestart()
   }
-
-  // The campaign may already be on the first bench, in which case the level it
-  // hands back is the one in hand: the board has to be laid out again here.
-  const startOverFromTheTop = () => {
-    if (!canWalkBack) {
-      endTheRun({ kind: 'rebirth', price: rebirthPrice })
-      return
-    }
-
-    game.restart()
-    onStartOver(game.score)
-  }
-
-  const startOverControl = (
-    <StartOver
-      position={position}
-      levelCount={levelCount}
-      total={total}
-      price={rebirthPrice}
-      wouldEndTheRun={!canWalkBack}
-      onStartOver={startOverFromTheTop}
-    />
-  )
 
   return (
     <main className='game'>
@@ -229,15 +191,12 @@ export function Game({
 
       <SpeedSlider speed={speed} onSpeedChange={setSpeed} />
 
-      <div className='undo'>
-        <HoldToRestart
-          onRestart={restartBench}
-          price={restartPrice}
-          forfeited={forfeited}
-          wouldEndTheRun={!canRestart}
-        />
-        {startOverControl}
-      </div>
+      <Restart
+        onRestart={restartBench}
+        price={restartPrice}
+        forfeited={forfeited}
+        wouldEndTheRun={!canRestart}
+      />
 
       <AnimatePresence>
         {game.isSolved && (
@@ -316,9 +275,6 @@ export function Game({
                 >
                   Play again
                 </button>
-                {/* Reachable at the end too: the card covers the bench, and
-                    with it the only other way back to the first flask. */}
-                {isLastBench && startOverControl}
               </div>
             </motion.div>
           </motion.section>

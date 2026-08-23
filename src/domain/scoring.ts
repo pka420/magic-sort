@@ -22,10 +22,6 @@ const POURS_THAT_COST_THE_SOLVING_HALF = 20
 /**
  * What a bench pays for a flawless run: another first bench for every bench
  * sorted to reach it, so the tenth is worth ten times the first.
- *
- * The ladder is the whole economy. An apprentice who presses on into the
- * benches that are hard to sort has to out-earn one who keeps sorting the easy
- * ones and walking back to them, or the game rewards the wrong player.
  */
 export function benchWorth(position: number): number {
   return WORTH_OF_THE_FIRST_BENCH * position
@@ -36,29 +32,21 @@ export function priceOfRestart(position: number): number {
   return benchWorth(position) / 10
 }
 
-/**
- * What walking back to the first bench costs: every bench behind the apprentice
- * and the one they are standing on.
- *
- * That price is deliberately more than the walk back can pay. Sorting the
- * benches behind again earns exactly what they are worth, so charging that
- * much plus the bench in hand leaves a farmer out of pocket every time round —
- * the only way to earn in this atelier is the bench you have not sorted yet.
- */
-export function priceOfRebirth(position: number): number {
-  return atelierWorth(position)
-}
-
 export interface Atelier {
   readonly levelCount: number
-  /** How many times the apprentice has gone back to the first bench. */
+  /**
+   * How many times the apprentice went back to the first bench, back when
+   * there was a walk back to take. Nothing raises it any more; saved runs
+   * still carry it, and the ceiling reads against what they say.
+   */
   readonly rebirths: number
 }
 
 /**
- * The ceiling on the scoreboard's total. A rebirth hands the apprentice every
- * bench to sort a second time while they keep the points from the first, so
- * each one opens another atelier's worth of points to earn.
+ * The ceiling on the scoreboard's total. Each rebirth recorded in a saved run
+ * handed the apprentice every bench to sort a second time while they kept the
+ * points from the first, so each one opened another atelier's worth of points
+ * to earn.
  */
 export function perfectTotal({ levelCount, rebirths }: Atelier): number {
   return atelierWorth(levelCount) * (rebirths + 1)
@@ -96,25 +84,6 @@ export interface Restart {
  */
 export function canPayForRestart({ banked, position }: Restart): boolean {
   return banked >= priceOfRestart(position)
-}
-
-export interface Rebirth {
-  /** Everything the apprentice has, the bench in hand included. */
-  readonly total: number
-  /** Which bench the apprentice would be walking back from. */
-  readonly position: number
-}
-
-/**
- * Whether the apprentice can pay for the walk back to the first bench.
- *
- * The whole total pays for it, unlike a restart: they are leaving the bench in
- * hand for good rather than laying it out again, so what it earned is banked as
- * they go. A price weighed against any number other than the one on the
- * scoreboard would read as a bug.
- */
-export function canPayForRebirth({ total, position }: Rebirth): boolean {
-  return total >= priceOfRebirth(position)
 }
 
 export function scoreFor(progress: RunProgress): number {

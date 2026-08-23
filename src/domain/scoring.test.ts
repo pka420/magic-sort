@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   benchWorth,
-  canPayForRebirth,
   canPayForRestart,
   perfectTotal,
-  priceOfRebirth,
   priceOfRestart,
   scoreFor,
   totalScore
@@ -124,27 +122,6 @@ describe('priceOfRestart', () => {
   })
 })
 
-describe('priceOfRebirth', () => {
-  it('costs a flawless first bench to walk back from the first bench', () => {
-    expect(priceOfRebirth(1)).toBe(1000)
-  })
-
-  /*
-   * The whole of the anti-farming rule: an apprentice who walks back to sort
-   * the easy benches again pays more for the walk than those benches can
-   * possibly pay them, so the only way to earn is to press on.
-   */
-  it('costs more than every bench behind the apprentice could pay back', () => {
-    const behind = [1, 2, 3, 4].map(benchWorth).reduce((a, b) => a + b, 0)
-
-    expect(priceOfRebirth(5)).toBeGreaterThan(behind)
-  })
-
-  it('costs the whole atelier behind the apprentice, and the bench they stand on', () => {
-    expect([1, 2, 3].map(priceOfRebirth)).toEqual([1000, 3000, 6000])
-  })
-})
-
 describe('totalScore', () => {
   it('adds what this bench is worth to what is already banked', () => {
     expect(totalScore({ banked: 1750, bench: 250 })).toBe(2000)
@@ -158,7 +135,9 @@ describe('perfectTotal', () => {
 
   /*
    * A reborn apprentice keeps their points and sorts the atelier again, so the
-   * ceiling has to make room for the second run of it.
+   * ceiling has to make room for the second run of it. No walk back raises this
+   * any more, but saved runs still carry the count, and the scoreboard has to
+   * keep reading against what a save says it was.
    */
   it('opens another atelier to earn every time the apprentice is reborn', () => {
     expect(perfectTotal({ levelCount: 3, rebirths: 2 })).toBe(18000)
@@ -187,32 +166,5 @@ describe('canPayForRestart', () => {
    */
   it('asks more of an apprentice throwing away a bench that pays more', () => {
     expect(canPayForRestart({ banked: 400, position: 5 })).toBe(false)
-  })
-})
-
-describe('canPayForRebirth', () => {
-  it('leaves a well-off apprentice free to walk back to the first bench', () => {
-    expect(canPayForRebirth({ total: 40000, position: 5 })).toBe(true)
-  })
-
-  /*
-   * The warning the rebirth dialog gives, and the end of the run if it is
-   * pressed all the same: deep into a run the walk back costs more than the
-   * apprentice has, and walking into that unwarned would make the game-over
-   * card an ambush rather than a decision.
-   */
-  it('refuses the walk back to an apprentice who cannot cover the atelier behind them', () => {
-    expect(canPayForRebirth({ total: 2000, position: 9 })).toBe(false)
-  })
-
-  /*
-   * Weighed against the whole total, the bench in hand included: the walk banks
-   * that bench on the way out, and a price weighed against any number other
-   * than the one on the scoreboard would read as a bug.
-   */
-  it('lets the price be paid out to the very last point', () => {
-    expect(canPayForRebirth({ total: priceOfRebirth(3), position: 3 })).toBe(
-      true
-    )
   })
 })

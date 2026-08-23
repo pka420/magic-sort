@@ -129,6 +129,7 @@ export const LEVELS: readonly Level[] = [
       filledFlask(['verdant', 'violet', 'pearl', 'crimson']),
       filledFlask(['crimson', 'azure', 'verdant', 'azure']),
       emptyFlask(4)
+      // check if its solvable?
     ]
   },
   {
@@ -169,6 +170,7 @@ export const LEVELS: readonly Level[] = [
       filledFlask(['crimson', 'amber', 'azure', 'amber', 'verdant']),
       filledFlask(['amber', 'crimson', 'violet', 'azure', 'verdant']),
       emptyFlask(5)
+      // is it solvable?
     ]
   },
   {

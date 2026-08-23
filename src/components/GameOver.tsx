@@ -12,10 +12,9 @@ interface GameOverProps {
 
 /**
  * The end of a run, whichever way it came: a bench with no pour left that the
- * apprentice cannot afford to lay out again, or a price they held down or
- * confirmed without the points to pay for it. It is hand rolled rather than a
- * <dialog>, for the same reason the rebirth's warning is — jsdom has no
- * showModal, and this is behaviour the tests have to drive.
+ * apprentice cannot afford to lay out again, or a restart pressed without the
+ * points to pay for it. It is hand rolled rather than a <dialog>, because
+ * jsdom has no showModal, and this is behaviour the tests have to drive.
  */
 export function GameOver({ ending, onBeginAgain }: GameOverProps) {
   const titleId = useId()
@@ -78,7 +77,5 @@ function whatEndedIt(ending: RunsEnd): string {
       return `There is no pour left on this bench, and you cannot pay the ${ending.price} points it costs to lay it out again.`
     case 'restart':
       return `Laying this bench out again costs ${ending.price} points, which is more than you have.`
-    case 'rebirth':
-      return `The walk back to the first bench costs ${ending.price} points, which is more than you have.`
   }
 }

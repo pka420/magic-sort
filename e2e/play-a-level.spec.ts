@@ -71,12 +71,8 @@ test('an apprentice sorts the starter level from first pour to last', async ({
   // The bench resets; what it earned does not.
   await expect(page.getByLabel('Total')).toHaveText('1000 / 1275000')
 
-  // Restarting takes a press that is held, which only a real pointer proves,
-  // and it costs a tenth of the bench being thrown away — 200 points on the
-  // second one. The assertion retries while the press charges, so it is the
-  // hold itself being waited on.
-  await page.getByRole('button', { name: 'Hold to restart' }).hover()
-  await page.mouse.down()
+  // A restart costs a tenth of the bench being thrown away — 200 points on
+  // the second one.
+  await page.getByRole('button', { name: 'Restart' }).click()
   await expect(page.getByLabel('Total')).toHaveText('800 / 1275000')
-  await page.mouse.up()
 })

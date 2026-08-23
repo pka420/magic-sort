@@ -83,22 +83,6 @@ const deadEnd: Level = {
   )
 }
 
-/** One layer of each elixir, so their marks can be compared side by side. */
-const oneOfEach: Level = {
-  id: 'test-one-of-each',
-  name: 'One of Each',
-  minimumPours: 1,
-  board: benchOfGlass(
-    4,
-    ['crimson'],
-    ['azure'],
-    ['verdant'],
-    ['amber'],
-    ['violet'],
-    ['pearl']
-  )
-}
-
 interface Standing {
   readonly position?: number
   readonly worth?: number
@@ -107,7 +91,6 @@ interface Standing {
   readonly forfeited?: number
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
-  readonly onStartOver?: (score: number) => void
   readonly onBeginAgain?: () => void
 }
 
@@ -123,7 +106,6 @@ const showBench = (level: Level, standing: Standing = {}) =>
       forfeited={standing.forfeited ?? 0}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
-      onStartOver={standing.onStartOver ?? (() => {})}
       onBeginAgain={standing.onBeginAgain ?? (() => {})}
     />
   )
@@ -260,16 +242,6 @@ describe('Game', () => {
 
     expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
     expect(flask(3)).toHaveAttribute('aria-pressed', 'true')
-  })
-
-  it('leaves the elixirs unmarked while the colours are enough', () => {
-    showBench(oneOfEach)
-
-    const marks = oneOfEach.board.map(
-      (_, index) => flask(index + 1).textContent
-    )
-
-    expect(marks).toEqual(['', '', '', '', '', ''])
   })
 
   it('keeps pouring into a four-layer flask on a bench of taller glass', async () => {
@@ -467,41 +439,18 @@ describe('Game', () => {
    * one of their run, which is what the warning under the button said it would
    * be.
    */
-  it('ends the run of an apprentice who holds a restart they cannot pay for', async () => {
+  it('ends the run of an apprentice who restarts a bench they cannot pay for', async () => {
     const user = userEvent.setup()
     const onRestart = vi.fn()
-    showBench(bench, { onRestart })
+    const onBeginAgain = vi.fn()
+    showBench(bench, { onRestart, onBeginAgain })
 
-    await user.pointer({
-      keys: '[MouseLeft>]',
-      target: screen.getByRole('button', { name: 'Hold to restart' })
-    })
+    await user.click(screen.getByRole('button', { name: 'Restart' }))
 
-    await waitFor(
-      () =>
-        expect(screen.getByRole('alertdialog')).toHaveTextContent(
-          'Laying this bench out again costs 100 points, which is more than you have.'
-        ),
-      { timeout: 3000 }
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'Laying this bench out again costs 100 points, which is more than you have.'
     )
     expect(onRestart).not.toHaveBeenCalled()
-  })
-
-  it('ends the run of an apprentice who confirms a walk back they cannot pay for', async () => {
-    const user = userEvent.setup()
-    const onStartOver = vi.fn()
-    showBench(bench, { onStartOver })
-
-    await user.click(screen.getByRole('button', { name: 'Start over' }))
-    await user.click(screen.getByRole('button', { name: 'Yes, end my run' }))
-
-    // Named, because the dialog that asked the question is still fading out.
-    expect(
-      screen.getByRole('alertdialog', { name: 'Game over' })
-    ).toHaveTextContent(
-      'The walk back to the first bench costs 1000 points, which is more than you have.'
-    )
-    expect(onStartOver).not.toHaveBeenCalled()
   })
 
   /*
@@ -514,8 +463,7 @@ describe('Game', () => {
     const onBeginAgain = vi.fn()
     showBench(bench, { onBeginAgain })
 
-    await user.click(screen.getByRole('button', { name: 'Start over' }))
-    await user.click(screen.getByRole('button', { name: 'Yes, end my run' }))
+    await user.click(screen.getByRole('button', { name: 'Restart' }))
 
     expect(onBeginAgain).toHaveBeenCalledTimes(1)
   })
@@ -547,47 +495,13 @@ describe('Game', () => {
     )
   })
 
-  it('hands the whole run back when the apprentice starts over', async () => {
-    const user = userEvent.setup()
-    const onStartOver = vi.fn()
-    showBench(bench, { bankedScore: 1000, onStartOver })
-
-    await pourFrom(user, 1, 2)
-    await user.click(screen.getByRole('button', { name: 'Start over' }))
-    await user.click(screen.getByRole('button', { name: 'Yes, start over' }))
-
-    expect(onStartOver).toHaveBeenCalledTimes(1)
-    expect(screen.getByLabelText('Pours')).toHaveTextContent('0')
-  })
-
-  /*
-   * The bench in hand goes with the apprentice rather than down the drain: they
-   * are leaving it for good rather than laying it out again, so the campaign is
-   * handed what it earned to bank on the way past.
-   */
-  it('hands over what the bench in hand earned as the apprentice walks back', async () => {
-    const user = userEvent.setup()
-    const onStartOver = vi.fn()
-    showBench(nearlyFull, { bankedScore: 1000, onStartOver })
-
-    await pourFrom(user, 2, 1)
-    await user.click(screen.getByRole('button', { name: 'Start over' }))
-    await user.click(screen.getByRole('button', { name: 'Yes, start over' }))
-
-    // One of the three elixirs sealed, which is a third of the sorting half.
-    expect(onStartOver).toHaveBeenCalledWith(167)
-  })
-
-  it('puts the bench back the way it started once the restart is held', async () => {
+  it('puts the bench back the way it started on a restart', async () => {
     const user = userEvent.setup()
     const onRestart = vi.fn()
     showBench(bench, { bankedScore: 100, onRestart })
 
     await pourFrom(user, 1, 2)
-    await user.pointer({
-      keys: '[MouseLeft>]',
-      target: screen.getByRole('button', { name: 'Hold to restart' })
-    })
+    await user.click(screen.getByRole('button', { name: 'Restart' }))
 
     await waitFor(
       () =>

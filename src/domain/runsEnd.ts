@@ -3,7 +3,7 @@ import { canPayForRestart, priceOfRestart } from './scoring'
 import type { Board } from './board'
 
 /**
- * How a run ended, which is what the card that closes it has to say. All three
+ * How a run ended, which is what the card that closes it has to say. Both
  * endings are the same sentence from a different side: the apprentice cannot
  * pay their way to a bench worth sorting.
  */
@@ -12,8 +12,6 @@ export type RunsEnd =
   | { readonly kind: 'stuck'; readonly price: number }
   /** Threw a bench away without the points to pay for it. */
   | { readonly kind: 'restart'; readonly price: number }
-  /** Set off back to the first bench without the points for the walk. */
-  | { readonly kind: 'rebirth'; readonly price: number }
 
 export interface Run {
   /** The bench in front of the apprentice, which may have run dry of pours. */
@@ -29,10 +27,6 @@ export interface Run {
  * and what to say about it, or null while there is a way out left. It is the
  * one ending nobody presses for: the campaign knows what is banked and the
  * bench knows what can still be poured, and neither answers it alone.
- *
- * The restart is the whole of the question. The walk back to the first bench
- * costs ten times as much at every bench, so an apprentice who cannot pay to
- * lay this one out again cannot walk away from it either.
  */
 export function endOfRun({ board, banked, position }: Run): RunsEnd | null {
   if (isStuck(board) && !canPayForRestart({ banked, position })) {

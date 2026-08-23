@@ -19,7 +19,6 @@ export function App() {
         forfeited={campaign.forfeited}
         onNextLevel={campaign.hasNext ? campaign.advance : null}
         onRestart={campaign.chargeForRestart}
-        onStartOver={campaign.startOver}
         onBeginAgain={campaign.beginAgain}
       />
     </>

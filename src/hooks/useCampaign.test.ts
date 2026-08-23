@@ -138,84 +138,6 @@ describe('useCampaign', () => {
   })
 
   /*
-   * Starting over is a rebirth rather than a wipe: the apprentice carries their
-   * points back to the first bench and pays for the privilege. A wipe would
-   * make the whole run worthless, which is why nobody ever pressed it.
-   */
-  it('carries what the apprentice earned back to the first bench', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(1000))
-    act(() => result.current.advance(900))
-    act(() => result.current.startOver(0))
-
-    expect(result.current).toMatchObject({ level: atelier[0], position: 1 })
-  })
-
-  it('charges the atelier behind the apprentice for the rebirth', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(6000))
-    act(() => result.current.advance(4000))
-    act(() => result.current.startOver(0))
-
-    // Three benches stood behind them, worth 6000 between them.
-    expect(result.current.bankedScore).toBe(4000)
-  })
-
-  /*
-   * The bench in hand is banked on the way out, unlike the one a restart throws
-   * away: the apprentice is leaving it for good rather than laying it out again,
-   * and the price is weighed against the total on the scoreboard.
-   */
-  it('banks what the bench in hand earned as the apprentice walks away from it', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(3000))
-    act(() => result.current.startOver(2500))
-
-    // The walk back from the second bench costs the 3000 behind them.
-    expect(result.current.bankedScore).toBe(2500)
-  })
-
-  /*
-   * The rule that keeps an apprentice moving forward: walking back to sort the
-   * easy benches again costs more than they can possibly pay, so farming them
-   * always ends worse than pressing on.
-   */
-  it('leaves the apprentice who walks back worse off than the one who did not', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(6000))
-    act(() => result.current.advance(4000))
-    const beforeTheWalkBack = result.current.bankedScore
-
-    act(() => result.current.startOver(0))
-    act(() => result.current.advance(1000))
-    act(() => result.current.advance(2000))
-
-    expect(result.current.bankedScore).toBeLessThan(beforeTheWalkBack)
-  })
-
-  it('counts a rebirth alongside what restarts have cost', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(4000))
-    act(() => result.current.chargeForRestart())
-    act(() => result.current.startOver(0))
-
-    expect(result.current.forfeited).toBe(3200)
-  })
-
-  it('opens another atelier to earn for the reborn apprentice', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.startOver(1000))
-
-    expect(result.current.perfectTotal).toBe(12000)
-  })
-
-  /*
    * Nothing in the atelier is bought on credit, so the ledger has no red in it:
    * a price the apprentice cannot pay ends their run instead, which is asked of
    * the domain where the bench is in view too. This floor is here for the runs
@@ -235,7 +157,6 @@ describe('useCampaign', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
     act(() => result.current.advance(1000))
-    act(() => result.current.startOver(0))
     act(() => result.current.beginAgain())
 
     expect(result.current).toMatchObject({
@@ -282,15 +203,18 @@ describe('useCampaign', () => {
     })
   })
 
-  it('holds the ceiling a rebirth raised, so the total still reads against it', () => {
+  /*
+   * Saved runs carry a rebirth count from when the walk back to the first bench
+   * still existed. The ceiling has to keep reading against it, or an apprentice
+   * returning with one would find their total over the top of the scoreboard.
+   */
+  it('holds the ceiling a saved rebirth raised, so the total still reads against it', () => {
     lendStorage()
-    const { result, unmount } = renderHook(() => useCampaign(atelier))
-    act(() => result.current.startOver(1000))
-    unmount()
+    rememberCampaign({ reached: 0, earned: 1000, forfeited: 0, rebirths: 1 })
 
-    const { result: onReturn } = renderHook(() => useCampaign(atelier))
+    const { result } = renderHook(() => useCampaign(atelier))
 
-    expect(onReturn.current.perfectTotal).toBe(12000)
+    expect(result.current.perfectTotal).toBe(12000)
   })
 
   /*

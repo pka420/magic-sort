@@ -78,36 +78,30 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.pointer({
-      keys: '[MouseLeft>]',
-      target: screen.getByRole('button', { name: 'Hold to restart' })
-    })
+    await user.click(screen.getByRole('button', { name: 'Restart' }))
 
-    await waitFor(
-      () =>
-        expect(screen.getByRole('alertdialog')).toHaveTextContent(
-          'Laying this bench out again costs 100 points, which is more than you have.'
-        ),
-      { timeout: 3000 }
+    await waitFor(() =>
+      expect(screen.getByRole('alertdialog')).toHaveTextContent(
+        'Laying this bench out again costs 100 points, which is more than you have.'
+      )
     )
   })
 
   /*
-   * The walk back to the first bench costs the whole atelier behind it, which
-   * deep into a run is more than the apprentice has: it is the way out of a run
-   * as well as the way back. What is being proved here runs from the dialog all
-   * the way down to the save being swept, and no lower layer can prove that on
-   * its own.
+   * The way out of an ended run, wired up end to end: the card hands back a
+   * fresh bench and an empty ledger, and the save that carried the old run in
+   * is gone rather than waiting for the next reload.
    */
   it('hands the apprentice a clean bench and an empty ledger once the run is over', async () => {
     lendStorage()
-    rememberCampaign({ reached: 4, earned: 9000, forfeited: 0, rebirths: 0 })
+    rememberCampaign({ reached: 4, earned: 300, forfeited: 0, rebirths: 0 })
     const user = userEvent.setup()
     render(<App />)
     expect(screen.getByText(/level 5 of/i)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Start over' }))
-    await user.click(screen.getByRole('button', { name: 'Yes, end my run' }))
+    // A restart on this bench costs 500 and the apprentice banks only 300:
+    // nothing here is bought on credit, so the press ends their run.
+    await user.click(screen.getByRole('button', { name: 'Restart' }))
     await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
 
     await waitFor(() =>

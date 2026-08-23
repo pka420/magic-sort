@@ -3,9 +3,10 @@
 // The sounds are generated rather than downloaded so the repository stays
 // self-contained. Re-run with `npm run sounds` after editing a recipe.
 //
-// Two sounds are deliberately not recipes: the rebirth and the end of a run are
-// recorded tracks at src/audio/revive.mp3 and src/audio/defeat.mp3. They have no
-// entry here on purpose, so that regenerating the bench cannot overwrite them.
+// Two sounds are deliberately not recipes: the new run opening and the end of
+// a run are recorded tracks at src/audio/revive.mp3 and src/audio/defeat.mp3.
+// They have no entry here on purpose, so that regenerating the bench cannot
+// overwrite them.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -54,23 +55,6 @@ function splash({ duration, gain = 0.5 }) {
     previous += (noise - previous) * 0.12
     const swell = Math.sin(progress * Math.PI)
     samples[i] = previous * swell * gain
-  }
-  return samples
-}
-
-/**
- * A hum that rises and swells rather than decaying, for a sound that has to
- * still be going when it ends: it is the bar filling, made audible.
- */
-function swell({ from, to, duration, gain = 0.5, wave = sine }) {
-  const samples = new Float32Array(Math.round(duration * SAMPLE_RATE))
-  let phase = 0
-
-  for (let i = 0; i < samples.length; i++) {
-    const progress = i / samples.length
-    phase += (from + (to - from) * progress * progress) / SAMPLE_RATE
-    const fadeIn = Math.min(1, progress / 0.05)
-    samples[i] = wave(phase) * fadeIn * (0.3 + 0.7 * progress) * gain
   }
   return samples
 }
@@ -134,14 +118,6 @@ const recipes = {
       tone({ from: 1046.5, duration: 0.5, gain: 0.22 }),
       tone({ from: 1318.5, duration: 0.5, gain: 0.2, delay: 0.06 }),
       tone({ from: 1568, duration: 0.55, gain: 0.18, delay: 0.12 })
-    ),
-
-  // The restart button charging up. Its length is the length of the hold in
-  // src/hooks/useHold.ts: the sound has to end when the bar is full.
-  charge: () =>
-    mix(
-      swell({ from: 160, to: 520, duration: 0.9, gain: 0.24, wave: triangle }),
-      swell({ from: 240, to: 784, duration: 0.9, gain: 0.12 })
     ),
 
   // Everything poured back out again: a sweep down through a wash of liquid.
