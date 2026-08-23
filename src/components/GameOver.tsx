@@ -11,8 +11,8 @@ interface GameOverProps {
 }
 
 /**
- * The end of a run, whichever way it came: a bench with no pour left that the
- * apprentice cannot afford to lay out again, or a restart pressed without the
+ * The end of a run, whichever way it came: a level with no pour left that the
+ * player cannot afford to lay out again, or a restart pressed without the
  * points to pay for it. It is hand rolled rather than a <dialog>, because
  * jsdom has no showModal, and this is behaviour the tests have to drive.
  */
@@ -53,7 +53,7 @@ export function GameOver({ ending, onBeginAgain }: GameOverProps) {
           Game over
         </h2>
         <p className='confirm__detail' id={debtId}>
-          {whatEndedIt(ending)} The workshop has been swept clean.
+          {whatEndedIt(ending)} The board has been cleared.
         </p>
 
         <div className='confirm__actions'>
@@ -74,8 +74,8 @@ export function GameOver({ ending, onBeginAgain }: GameOverProps) {
 function whatEndedIt(ending: RunsEnd): string {
   switch (ending.kind) {
     case 'stuck':
-      return `There is no pour left on this bench, and you cannot pay the ${ending.price} points it costs to lay it out again.`
+      return `There is no pour left on this level, and you cannot pay the ${ending.price} points it costs to lay it out again.`
     case 'restart':
-      return `Laying this bench out again costs ${ending.price} points, which is more than you have.`
+      return `Laying this level out again costs ${ending.price} points, which is more than you have.`
   }
 }

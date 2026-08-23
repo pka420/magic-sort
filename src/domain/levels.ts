@@ -1,70 +1,25 @@
 import { emptyFlask, filledFlask, partFilledFlask } from './flask'
 import type { Board } from './board'
 
+/**
+ * A stable handle for a level, so a half-sorted board can be recognised again
+ * after a reload. It deliberately carries no position: the play order is the
+ * order of this list, which has already changed once.
+ */
 export interface Level {
+  readonly id: number
   /**
-   * A stable handle for the bench, deliberately carrying no position: the order
-   * of the atelier is the order of this list, and has already changed once.
-   */
-  readonly id: string
-  readonly name: string
-  /**
-   * The fewest pours that can sort this bench, which the scoreboard promises
+   * The fewest pours that can sort this level, which the scoreboard promises
    * the player is the true minimum, and the solve bonus measures them against.
-   * A breadth-first search over every reachable bench proves each one in the
+   * A breadth-first search over every reachable board proves each one in the
    * test suite, so editing a board without re-running it will fail the build.
    */
   readonly minimumPours: number
   readonly board: Board
 }
 
-/**
- * The atelier, in the order an apprentice earns it: an opening shelf that
- * teaches the game, and then a shelf per mechanic on top of it.
- *
- * Difficulty comes from three dials: how many elixirs are in play, how many
- * flasks are left spare to pour into, and how many layers the glass holds.
- * Spares are the stronger of the first two by far — a bench with one leaves
- * almost no room to manoeuvre, refusing most pours outright.
- *
- * So a new mechanic buys exactly one roomy bench and no more. Learning what
- * taller glass does is enough to be getting on with; the bench after it is back
- * to a single spare. The atelier used to spend three benches at two spares
- * after the taller glass arrived, and players felt the game go slack for the
- * rest of the shelf — the room it had just spent five benches taking away was
- * handed back all at once. The opening shelf is the one exception, because it
- * is teaching the game itself rather than a mechanic on top of it.
- *
- * Pour count is not a dial, which players proved: they found the five-elixir
- * bench with one spare harder than the six-elixir bench with two, though it
- * needs three fewer pours to sort. It is why the last bench of the atelier is
- * not the longest one to sort, and does not need to be. What is measured
- * instead is the bench's own space of arrangements, and how much of it is a
- * trap: the share that can no longer be sorted, whatever is poured next. A
- * roomy bench loses under a tenth of its arrangements and a bench with a single
- * spare loses a third or more, and along a shelf that count only ever climbs.
- * The test suite walks every bench and holds the ladder to it.
- *
- * Mixed glass changes what the puzzle is about: an elixir can only ever be
- * sealed in a glass its layers exactly fill, so the three-layer vials are the
- * only home the short elixirs have. The spare is always full-size glass,
- * because a lone three-layer vial cannot hold a run poured out of a five and
- * leaves almost every bench unsortable — the small glass is a destination,
- * never room to work in.
- *
- * The mechanics arrive in this order, one shelf each: four-layer glass, then
- * five, then two sizes mixed, then three; the deep six-layer glass beside the
- * vials, and the whole cabinet of sizes at once; room scattered rather than
- * pooled, where the free layers are spread through part-filled glass so that no
- * flask stands empty and a run has nowhere to be poured out to; the seven-layer
- * decanter; and the last shelf, which is every one of them together. The
- * elixirs climb from four to eight along the way, saffron and indigo joining
- * the six the first shelves are sorted from.
- */
-export const LEVELS: readonly Level[] = [
+const LAYOUTS: readonly Omit<Level, 'id'>[] = [
   {
-    id: 'apprentice',
-    name: "The Apprentice's Bench",
     minimumPours: 14,
     board: [
       filledFlask(['crimson', 'azure', 'verdant', 'amber']),
@@ -76,8 +31,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'herbalist',
-    name: "The Herbalist's Shelf",
     minimumPours: 16,
     board: [
       filledFlask(['amber', 'crimson', 'verdant', 'azure']),
@@ -90,8 +43,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'alchemist',
-    name: "The Alchemist's Table",
     minimumPours: 21,
     board: [
       filledFlask(['crimson', 'verdant', 'violet', 'amber']),
@@ -105,8 +56,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'cupboard',
-    name: 'The Crowded Cupboard',
     minimumPours: 18,
     board: [
       filledFlask(['violet', 'amber', 'verdant', 'crimson']),
@@ -118,8 +67,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'archmage',
-    name: "The Archmage's Vault",
     minimumPours: 22,
     board: [
       filledFlask(['azure', 'crimson', 'pearl', 'crimson']),
@@ -129,12 +76,9 @@ export const LEVELS: readonly Level[] = [
       filledFlask(['verdant', 'violet', 'pearl', 'crimson']),
       filledFlask(['crimson', 'azure', 'verdant', 'azure']),
       emptyFlask(4)
-      // check if its solvable?
     ]
   },
   {
-    id: 'glassblower',
-    name: "The Glassblower's Gift",
     minimumPours: 18,
     board: [
       filledFlask(['amber', 'crimson', 'amber', 'azure', 'crimson']),
@@ -146,8 +90,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'larder',
-    name: 'The Narrow Larder',
     minimumPours: 21,
     board: [
       filledFlask(['verdant', 'crimson', 'verdant', 'crimson', 'amber']),
@@ -159,8 +101,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'alembic',
-    name: 'The Grand Alembic',
     minimumPours: 26,
     board: [
       filledFlask(['violet', 'azure', 'pearl', 'amber', 'verdant']),
@@ -170,12 +110,9 @@ export const LEVELS: readonly Level[] = [
       filledFlask(['crimson', 'amber', 'azure', 'amber', 'verdant']),
       filledFlask(['amber', 'crimson', 'violet', 'azure', 'verdant']),
       emptyFlask(5)
-      // is it solvable?
     ]
   },
   {
-    id: 'vials',
-    name: 'The Vial Rack',
     minimumPours: 15,
     board: [
       filledFlask(['verdant', 'azure', 'amber', 'verdant', 'crimson']),
@@ -187,8 +124,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'distiller',
-    name: "The Distiller's Row",
     minimumPours: 18,
     board: [
       filledFlask(['violet', 'crimson', 'azure', 'crimson', 'amber']),
@@ -200,8 +135,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'apothecary',
-    name: "The Apothecary's Wall",
     minimumPours: 24,
     board: [
       filledFlask(['amber', 'verdant', 'crimson', 'amber', 'verdant']),
@@ -214,8 +147,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'mismatched',
-    name: 'The Mismatched Set',
     minimumPours: 16,
     board: [
       filledFlask(['verdant', 'azure', 'amber', 'verdant', 'crimson']),
@@ -227,8 +158,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'curator',
-    name: "The Curator's Cabinet",
     minimumPours: 22,
     board: [
       filledFlask(['amber', 'azure', 'violet', 'crimson', 'amber']),
@@ -240,8 +169,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'philosopher',
-    name: "The Philosopher's Bench",
     minimumPours: 24,
     board: [
       filledFlask(['violet', 'verdant', 'violet', 'amber', 'verdant']),
@@ -254,8 +181,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'deep',
-    name: 'The Deep Glass',
     minimumPours: 17,
     board: [
       filledFlask(['crimson', 'azure', 'crimson', 'azure']),
@@ -267,8 +192,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'cooper',
-    name: "The Cooper's Cellar",
     minimumPours: 24,
     board: [
       filledFlask(['azure', 'violet', 'verdant', 'azure']),
@@ -280,8 +203,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'tallow',
-    name: 'The Tallow Counter',
     minimumPours: 24,
     board: [
       filledFlask(['azure', 'crimson', 'verdant', 'verdant', 'azure', 'pearl']),
@@ -294,8 +215,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'brimming',
-    name: 'The Brimming Chest',
     minimumPours: 26,
     board: [
       filledFlask([
@@ -315,8 +234,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'draught',
-    name: 'The Long Draught',
     minimumPours: 29,
     board: [
       filledFlask(['crimson', 'amber', 'verdant', 'amber', 'pearl', 'verdant']),
@@ -337,8 +254,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'glazier',
-    name: "The Glazier's Sample",
     minimumPours: 14,
     board: [
       filledFlask(['azure', 'azure', 'azure', 'verdant', 'amber', 'amber']),
@@ -350,8 +265,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'measures',
-    name: 'The Four Measures',
     minimumPours: 28,
     board: [
       filledFlask(['azure', 'crimson', 'azure', 'verdant', 'azure', 'pearl']),
@@ -371,8 +284,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'sorter',
-    name: "The Sorter's Ledger",
     minimumPours: 30,
     board: [
       filledFlask([
@@ -393,8 +304,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'assayer',
-    name: "The Assayer's Balance",
     minimumPours: 35,
     board: [
       filledFlask(['amber', 'pearl', 'azure']),
@@ -415,8 +324,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'sideboard',
-    name: 'The Crowded Sideboard',
     minimumPours: 34,
     board: [
       filledFlask(['amber', 'pearl', 'indigo', 'violet']),
@@ -431,8 +338,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'halfpoured',
-    name: 'The Half-Poured Batch',
     minimumPours: 15,
     board: [
       partFilledFlask(4, ['crimson', 'amber', 'crimson']),
@@ -444,8 +349,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'spilled',
-    name: 'The Spilled Measure',
     minimumPours: 23,
     board: [
       filledFlask(['crimson', 'violet', 'azure', 'violet', 'crimson', 'amber']),
@@ -458,8 +361,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'uneven',
-    name: 'The Uneven Pour',
     minimumPours: 27,
     board: [
       partFilledFlask(4, ['verdant', 'crimson', 'crimson']),
@@ -473,8 +374,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'careless',
-    name: 'The Careless Hand',
     minimumPours: 29,
     board: [
       filledFlask(['saffron', 'crimson', 'amber', 'azure']),
@@ -488,8 +387,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'restless',
-    name: 'The Restless Cellar',
     minimumPours: 36,
     board: [
       filledFlask(['amber', 'azure', 'saffron', 'pearl', 'azure', 'crimson']),
@@ -504,8 +401,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'errand',
-    name: 'The Unfinished Errand',
     minimumPours: 14,
     board: [
       filledFlask(['amber', 'crimson', 'verdant']),
@@ -517,8 +412,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'crooked',
-    name: 'The Crooked Dozen',
     minimumPours: 33,
     board: [
       filledFlask([
@@ -539,8 +432,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'scullery',
-    name: 'The Cluttered Scullery',
     minimumPours: 33,
     board: [
       partFilledFlask(4, ['verdant', 'violet', 'azure']),
@@ -561,8 +452,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'midnight',
-    name: 'The Midnight Inventory',
     minimumPours: 34,
     board: [
       partFilledFlask(6, ['verdant', 'violet', 'azure', 'amber']),
@@ -577,8 +466,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'guild',
-    name: "The Guild's Reckoning",
     minimumPours: 33,
     board: [
       filledFlask(['indigo', 'azure', 'azure', 'pearl', 'violet', 'saffron']),
@@ -593,8 +480,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'decanter',
-    name: "The Master's Decanter",
     minimumPours: 16,
     board: [
       filledFlask([
@@ -622,8 +507,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'cask',
-    name: 'The Deep Cask',
     minimumPours: 25,
     board: [
       filledFlask(['azure', 'crimson', 'amber']),
@@ -652,8 +535,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'seals',
-    name: 'The Seven Seals',
     minimumPours: 34,
     board: [
       filledFlask(['crimson', 'violet', 'verdant']),
@@ -691,8 +572,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'towering',
-    name: 'The Towering Flight',
     minimumPours: 31,
     board: [
       filledFlask(['crimson', 'saffron', 'verdant']),
@@ -730,8 +609,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'vintner',
-    name: "The Vintner's Folly",
     minimumPours: 37,
     board: [
       filledFlask(['verdant', 'crimson', 'verdant', 'azure', 'violet']),
@@ -770,8 +647,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'cabinet',
-    name: 'The Grand Cabinet',
     minimumPours: 14,
     board: [
       filledFlask(['crimson', 'crimson', 'amber', 'amber']),
@@ -791,8 +666,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'cellar',
-    name: 'The Whole Cellar',
     minimumPours: 39,
     board: [
       filledFlask([
@@ -822,8 +695,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'counter',
-    name: 'The Endless Counter',
     minimumPours: 38,
     board: [
       filledFlask([
@@ -860,8 +731,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'keeper',
-    name: "The Keeper's Inventory",
     minimumPours: 44,
     board: [
       filledFlask(['azure', 'verdant', 'crimson', 'azure']),
@@ -899,8 +768,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'ledger',
-    name: "The Master's Ledger",
     minimumPours: 40,
     board: [
       filledFlask(['amber', 'azure', 'crimson', 'crimson', 'saffron']),
@@ -938,8 +805,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'apprenticeship',
-    name: 'The Last Apprenticeship',
     minimumPours: 17,
     board: [
       partFilledFlask(5, ['azure', 'crimson', 'crimson', 'verdant']),
@@ -959,8 +824,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'sorcerer',
-    name: "The Sorcerer's Draught",
     minimumPours: 39,
     board: [
       partFilledFlask(7, [
@@ -996,8 +859,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'adept',
-    name: "The Adept's Trial",
     minimumPours: 43,
     board: [
       partFilledFlask(4, ['saffron', 'azure']),
@@ -1035,8 +896,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'vigil',
-    name: 'The Long Vigil',
     minimumPours: 38,
     board: [
       partFilledFlask(7, [
@@ -1074,8 +933,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'distillation',
-    name: 'The Final Distillation',
     minimumPours: 36,
     board: [
       filledFlask(['indigo', 'verdant', 'violet']),
@@ -1112,8 +969,6 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'opus',
-    name: 'The Magnum Opus',
     minimumPours: 41,
     board: [
       partFilledFlask(7, [
@@ -1157,3 +1012,13 @@ export const LEVELS: readonly Level[] = [
     ]
   }
 ]
+
+/**
+ * A level's id is its place in this list, counted from one. Deriving it here
+ * rather than writing it into the data keeps every id unique and in play order
+ * no matter how the list is edited.
+ */
+export const LEVELS: readonly Level[] = LAYOUTS.map((layout, index) => ({
+  ...layout,
+  id: index + 1
+}))

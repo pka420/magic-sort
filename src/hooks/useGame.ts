@@ -8,7 +8,7 @@ import {
 } from '../domain/board'
 import { isComplete, isEmpty } from '../domain/flask'
 import { scoreFor } from '../domain/scoring'
-import { readSavedRun, rememberBench } from '../storage/savedRun'
+import { readSavedRun, rememberProgress } from '../storage/savedRun'
 import type { Board } from '../domain/board'
 import type { Level } from '../domain/levels'
 
@@ -37,8 +37,8 @@ export interface Game {
   restart: () => void
 }
 
-interface Bench {
-  /** The level this bench was laid out from, so a new one can be spotted. */
+interface Session {
+  /** The level this board was laid out from, so a new one can be spotted. */
   readonly level: Level
   readonly board: Board
   readonly selectedIndex: number | null
@@ -47,72 +47,74 @@ interface Bench {
 }
 
 /**
- * The bench in play. The worth is handed in rather than read off the level,
- * because what a bench pays is its place in the atelier rather than anything
+ * The level in play. The worth is handed in rather than read off the level,
+ * because what a level pays is its place in the campaign rather than anything
  * about the glass on it: the same board pays more the later it is met.
  */
 export function useGame(level: Level, worth: number): Game {
-  // Only a first render looks for a saved bench. Every other way of arriving
+  // Only a first render looks for a saved session. Every other way of arriving
   // at one — moving on, restarting, playing again — is asking for a board laid
   // out afresh, and would be wrong to hand back a half-solved one.
-  const [bench, setBench] = useState(() => savedBench(level) ?? benchFor(level))
+  const [session, setSession] = useState(
+    () => savedSession(level) ?? sessionFor(level)
+  )
 
-  // A different level is a different bench, not a continuation of this one: the
-  // apprentice moving on has to arrive at a full board with no pours spent.
-  if (bench.level !== level) setBench(benchFor(level))
+  // A different level is a different session, not a continuation of this one:
+  // moving on has to arrive at a full board with no pours spent.
+  if (session.level !== level) setSession(sessionFor(level))
 
   useEffect(() => {
-    rememberBench({
-      levelId: bench.level.id,
-      board: bench.board,
-      pours: bench.pours
+    rememberProgress({
+      levelId: session.level.id,
+      board: session.board,
+      pours: session.pours
     })
-  }, [bench.level.id, bench.board, bench.pours])
+  }, [session.level.id, session.board, session.pours])
 
   const tapFlask = useCallback((index: number) => {
-    setBench((current) => tap(current, index))
+    setSession((current) => tap(current, index))
   }, [])
 
   const restart = useCallback(() => {
-    setBench(benchFor(level))
+    setSession(sessionFor(level))
   }, [level])
 
-  const solved = isSolved(bench.board)
+  const solved = isSolved(session.board)
   const score = scoreFor({
-    completedFlasks: completedFlaskCount(bench.board),
-    flasksToFill: flasksToFill(bench.board),
-    pours: bench.pours,
+    completedFlasks: completedFlaskCount(session.board),
+    flasksToFill: flasksToFill(session.board),
+    pours: session.pours,
     minimumPours: level.minimumPours,
     worth,
     solved
   })
 
   return {
-    board: bench.board,
-    selectedIndex: bench.selectedIndex,
-    pours: bench.pours,
+    board: session.board,
+    selectedIndex: session.selectedIndex,
+    pours: session.pours,
     score,
     isSolved: solved,
-    lastTap: bench.lastTap,
+    lastTap: session.lastTap,
     tapFlask,
     restart
   }
 }
 
 /**
- * The bench the apprentice walked away from, if the one they walked away from
- * is the one in front of them now. A save from another level is left alone:
- * the campaign is the only thing that decides which bench this is.
+ * The board the player walked away from, if it belongs to the level in front
+ * of them now. A save from another level is left alone: the campaign is the
+ * only thing that decides which level this is.
  */
-function savedBench(level: Level): Bench | null {
-  const saved = readSavedRun()?.bench
+function savedSession(level: Level): Session | null {
+  const saved = readSavedRun()?.progress
   if (saved === null || saved === undefined) return null
   if (saved.levelId !== level.id) return null
 
-  return { ...benchFor(level), board: saved.board, pours: saved.pours }
+  return { ...sessionFor(level), board: saved.board, pours: saved.pours }
 }
 
-function benchFor(level: Level): Bench {
+function sessionFor(level: Level): Session {
   return {
     level,
     board: level.board,
@@ -127,18 +129,18 @@ function benchFor(level: Level): Bench {
   }
 }
 
-function tap(bench: Bench, index: number): Bench {
-  const sequence = bench.lastTap.sequence + 1
+function tap(session: Session, index: number): Session {
+  const sequence = session.lastTap.sequence + 1
   const quietTap = {
     sequence,
     completedFlaskIndex: null,
     refusedFlaskIndex: null
   }
 
-  if (bench.selectedIndex === null) {
-    const picked = pickUp(bench.board, index)
+  if (session.selectedIndex === null) {
+    const picked = pickUp(session.board, index)
     return {
-      ...bench,
+      ...session,
       selectedIndex: picked,
       lastTap: {
         ...quietTap,
@@ -147,29 +149,29 @@ function tap(bench: Bench, index: number): Bench {
     }
   }
 
-  if (bench.selectedIndex === index) {
+  if (session.selectedIndex === index) {
     return {
-      ...bench,
+      ...session,
       selectedIndex: null,
       lastTap: { ...quietTap, outcome: 'put-down' }
     }
   }
 
-  if (!canPourBetween(bench.board, bench.selectedIndex, index)) {
+  if (!canPourBetween(session.board, session.selectedIndex, index)) {
     return {
-      ...bench,
+      ...session,
       selectedIndex: null,
       lastTap: { ...quietTap, outcome: 'refused', refusedFlaskIndex: index }
     }
   }
 
-  const board = pourBetween(bench.board, bench.selectedIndex, index)
+  const board = pourBetween(session.board, session.selectedIndex, index)
 
   return {
-    ...bench,
+    ...session,
     board,
     selectedIndex: null,
-    pours: bench.pours + 1,
+    pours: session.pours + 1,
     lastTap: {
       ...quietTap,
       outcome: 'poured',

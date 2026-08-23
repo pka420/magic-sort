@@ -1,6 +1,6 @@
 import confetti from 'canvas-confetti'
 
-/** The elixir palette, so the paper matches the potions. */
+/** The elixir palette, so the confetti matches the colours on the board. */
 const COLOURS = [
   '#ff4f6d',
   '#46b4ff',
@@ -32,7 +32,7 @@ export function celebrateFlask(flask: Element): void {
   })
 }
 
-/** The whole level is sorted, so the atelier goes up in colour. */
+/** The whole level is sorted, so the screen fills with colour. */
 export function celebrateLevel(): void {
   if (!canCelebrate()) return
 

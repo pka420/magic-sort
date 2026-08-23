@@ -1,20 +1,19 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useGame } from './useGame'
-import { benchWorth } from '../domain/scoring'
-import { benchOfGlass } from '../test/bench'
+import { levelWorth } from '../domain/scoring'
+import { boardOfGlass } from '../test/board'
 import { lendStorage } from '../test/storage'
 import type { Level } from '../domain/levels'
 
-/** Every bench below is played as the opening one, which pays a thousand. */
-const worth = benchWorth(1)
+/** Every level below is played as the opening one, which pays a thousand. */
+const worth = levelWorth(1)
 
 /** Two pours from being solved, so tests stay short and readable. */
 const almostSolved: Level = {
-  id: 'test-bench',
-  name: 'Test Bench',
+  id: 1,
   minimumPours: 1,
-  board: benchOfGlass(
+  board: boardOfGlass(
     4,
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
@@ -24,10 +23,9 @@ const almostSolved: Level = {
 
 /** Flask 2 can never pour onto flask 0, which gives tests an illegal move. */
 const mixed: Level = {
-  id: 'test-mixed',
-  name: 'Mixed Bench',
+  id: 2,
   minimumPours: 4,
-  board: benchOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
+  board: boardOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
 }
 
 afterEach(() => {
@@ -78,7 +76,7 @@ describe('useGame', () => {
     act(() => result.current.tapFlask(1))
 
     expect(result.current.board).toEqual(
-      benchOfGlass(4, ['crimson'], ['azure', 'azure'], ['verdant'], [])
+      boardOfGlass(4, ['crimson'], ['azure', 'azure'], ['verdant'], [])
     )
   })
 
@@ -136,9 +134,9 @@ describe('useGame', () => {
     expect(result.current.score).toBe(1000)
   })
 
-  /* The same bench, played later in the atelier, pays what it is worth there. */
-  it('scores the run against what this bench is worth', () => {
-    const { result } = renderHook(() => useGame(almostSolved, benchWorth(7)))
+  /* The same level, played later in the campaign, pays what it is worth there. */
+  it('scores the run against what this level is worth', () => {
+    const { result } = renderHook(() => useGame(almostSolved, levelWorth(7)))
 
     act(() => result.current.tapFlask(1))
     act(() => result.current.tapFlask(0))
@@ -206,7 +204,7 @@ describe('useGame', () => {
     expect(result.current.lastTap.sequence).toBeGreaterThan(first.sequence)
   })
 
-  it('lays out a fresh bench when it is handed a different level', () => {
+  it('lays out a fresh board when it is handed a different level', () => {
     const { result, rerender } = renderHook(
       ({ level }) => useGame(level, worth),
       {
@@ -225,7 +223,7 @@ describe('useGame', () => {
     })
   })
 
-  it('sends the bench back to its opening state on restart', () => {
+  it('sends the board back to its opening state on restart', () => {
     const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
@@ -240,11 +238,11 @@ describe('useGame', () => {
   })
 
   /*
-   * The pours already spent are the point. A bench that came back laid out
+   * The pours already spent are the point. A board that came back laid out
    * afresh would make closing the tab a restart that costs nothing, which is
    * the one thing a restart is not supposed to be.
    */
-  it('hands the apprentice back the bench they left part-solved', () => {
+  it('hands the player back the board they left part-solved', () => {
     lendStorage()
     const { result, unmount } = renderHook(() => useGame(mixed, worth))
     act(() => result.current.tapFlask(0))
@@ -257,7 +255,7 @@ describe('useGame', () => {
     expect(onReturn.current).toMatchObject({ board: leftBehind, pours: 1 })
   })
 
-  it('lays out a fresh bench when the saved one belongs to another level', () => {
+  it('lays out a fresh board when the saved one belongs to another level', () => {
     lendStorage()
     const { result, unmount } = renderHook(() => useGame(mixed, worth))
     act(() => result.current.tapFlask(0))
@@ -272,7 +270,7 @@ describe('useGame', () => {
     })
   })
 
-  it('restarts to the opening bench rather than to the one that was saved', () => {
+  it('restarts to the opening board rather than to the one that was saved', () => {
     lendStorage()
     const { result } = renderHook(() => useGame(mixed, worth))
 

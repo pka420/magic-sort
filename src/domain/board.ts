@@ -1,7 +1,7 @@
 import { canPour, isComplete, isEmpty, pour } from './flask'
 import type { Flask } from './flask'
 
-/** Every flask on the bench, in the order the apprentice sees them. */
+/** Every flask on the board, in the order the player sees them. */
 export type Board = readonly Flask[]
 
 export function isSolved(board: Board): boolean {
@@ -9,8 +9,8 @@ export function isSolved(board: Board): boolean {
 }
 
 /**
- * A bench with no pour left in it: every flask with room to spare turns away
- * the top of every flask that could fill it. A sorted bench has run out of
+ * A board with no pour left in it: every flask with room to spare turns away
+ * the top of every flask that could fill it. A sorted board has run out of
  * pours too, but by winning, so it never counts as stuck.
  */
 export function isStuck(board: Board): boolean {
@@ -25,7 +25,7 @@ export function completedFlaskCount(board: Board): number {
   return board.filter(isComplete).length
 }
 
-/** How many flasks a sorted bench ends up with: one per elixir on it. */
+/** How many flasks a sorted board ends up with: one per elixir on it. */
 export function flasksToFill(board: Board): number {
   return new Set(board.flatMap((flask) => flask.contents)).size
 }

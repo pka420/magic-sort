@@ -11,24 +11,24 @@ const oneMorePour: Board = [
 ]
 
 describe('possibilitiesOf', () => {
-  it('counts the bench itself among the arrangements it can reach', () => {
+  it('counts the board itself among the arrangements it can reach', () => {
     const board: Board = [filledFlask(['crimson', 'crimson'])]
 
     expect(possibilitiesOf(board)).toEqual({ reachable: 1, lost: 0 })
   })
 
-  it('counts every arrangement a bench can be poured into', () => {
-    // Either flask can pour into the other, and both leave the same bench
+  it('counts every arrangement a board can be poured into', () => {
+    // Either flask can pour into the other, and both leave the same board
     // sorted: two arrangements in all, whichever way round it is done.
     expect(possibilitiesOf(oneMorePour)).toEqual({ reachable: 2, lost: 0 })
   })
 
   /*
-   * The measure the atelier is built on. A bench is hard because of how much
+   * The measure the campaign is built on. A board is hard because of how much
    * of it is a trap, not because of how many pours it takes: an arrangement
-   * counts as lost when no sequence of pours from it can sort the bench again.
+   * counts as lost when no sequence of pours from it can sort the board again.
    */
-  it('counts the arrangements from which the bench can no longer be sorted', () => {
+  it('counts the arrangements from which the board can no longer be sorted', () => {
     // Ten arrangements between them, and exactly one of them a dead end: the
     // spare vial filled with the wrong elixir, with nowhere left to pour it.
     const spoilable: Board = [
@@ -41,7 +41,7 @@ describe('possibilitiesOf', () => {
     expect(possibilitiesOf(spoilable)).toEqual({ reachable: 10, lost: 1 })
   })
 
-  it('counts a bench nobody could ever sort as lost from the outset', () => {
+  it('counts a board nobody could ever sort as lost from the outset', () => {
     const hopeless: Board = [
       filledFlask(['crimson', 'azure', 'crimson', 'azure']),
       filledFlask(['azure', 'crimson', 'azure', 'crimson'])

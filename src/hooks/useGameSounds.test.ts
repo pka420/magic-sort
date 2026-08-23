@@ -3,26 +3,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGame } from './useGame'
 import { useGameSounds } from './useGameSounds'
 import { playSound } from '../audio/sounds'
-import { benchWorth } from '../domain/scoring'
-import { benchOfGlass } from '../test/bench'
+import { levelWorth } from '../domain/scoring'
+import { boardOfGlass } from '../test/board'
 import type { Level } from '../domain/levels'
 
 // Audio playback is a genuine boundary, so it is the one thing stubbed here.
 vi.mock('../audio/sounds', () => ({ playSound: vi.fn() }))
 
-const bench: Level = {
-  id: 'test-bench',
-  name: 'Test Bench',
+const level: Level = {
+  id: 1,
   minimumPours: 4,
-  board: benchOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
+  board: boardOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
 }
 
 /** Tapping flask 2 then flask 1 completes a flask and solves the level. */
 const finalPour: Level = {
-  id: 'test-final-pour',
-  name: 'Final Pour',
+  id: 2,
   minimumPours: 1,
-  board: benchOfGlass(
+  board: boardOfGlass(
     4,
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
@@ -32,7 +30,7 @@ const finalPour: Level = {
 
 function renderGameWithSound(level: Level) {
   return renderHook(() => {
-    const game = useGame(level, benchWorth(1))
+    const game = useGame(level, levelWorth(1))
     useGameSounds(game)
     return game
   })
@@ -44,7 +42,7 @@ beforeEach(() => {
 
 describe('useGameSounds', () => {
   it('chimes when a flask is picked up', () => {
-    const { result } = renderGameWithSound(bench)
+    const { result } = renderGameWithSound(level)
 
     act(() => result.current.tapFlask(0))
 
@@ -52,7 +50,7 @@ describe('useGameSounds', () => {
   })
 
   it('splashes when elixir is poured', () => {
-    const { result } = renderGameWithSound(bench)
+    const { result } = renderGameWithSound(level)
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -61,7 +59,7 @@ describe('useGameSounds', () => {
   })
 
   it('thuds when the pour is refused', () => {
-    const { result } = renderGameWithSound(bench)
+    const { result } = renderGameWithSound(level)
 
     act(() => result.current.tapFlask(2))
     act(() => result.current.tapFlask(0))
@@ -87,8 +85,8 @@ describe('useGameSounds', () => {
     expect(playSound).toHaveBeenCalledWith('victory')
   })
 
-  it('stays quiet until the apprentice does something', () => {
-    renderGameWithSound(bench)
+  it('stays quiet until the player does something', () => {
+    renderGameWithSound(level)
 
     expect(playSound).not.toHaveBeenCalled()
   })

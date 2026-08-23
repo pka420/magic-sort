@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { GameOver } from './GameOver'
+import { Menu } from './Menu'
 import { Restart } from './Restart'
 import { SpeedSlider } from './SpeedSlider'
 import { ScoreBoard } from './ScoreBoard'
@@ -17,25 +18,25 @@ import type { RunsEnd } from '../domain/runsEnd'
 
 interface GameProps {
   readonly level: Level
-  /** Which bench of the atelier this is, counted the way a player counts. */
+  /** Which level of the campaign this is, counted the way a player counts. */
   readonly position: number
   readonly levelCount: number
-  /** What a flawless run of this bench pays, which climbs with its position. */
+  /** What a flawless run of this level pays, which climbs with its position. */
   readonly worth: number
-  /** Points earned on the benches before this one, less what restarts cost. */
+  /** Points earned on the levels before this one, less what restarts cost. */
   readonly bankedScore: number
   /** The ceiling those points climb towards, as saved campaigns left it. */
   readonly perfectTotal: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
   /**
-   * Hands over the next bench, taking what this one scored so the campaign can
-   * bank it. Null when this is the last bench.
+   * Hands over the next level, taking what this one scored so the campaign can
+   * bank it. Null when this is the last level.
    */
   readonly onNextLevel: ((score: number) => void) | null
-  /** Tells the campaign a bench was thrown away, so it can charge for it. */
+  /** Tells the campaign a level was thrown away, so it can charge for it. */
   readonly onRestart: () => void
-  /** Opens a run from nothing, for an apprentice with nothing left. */
+  /** Opens a run from nothing, for a player with nothing left. */
   readonly onBeginAgain: () => void
 }
 
@@ -57,18 +58,18 @@ export function Game({
   const [speed, setSpeed] = useState(1)
 
   /*
-   * A run ended by a price the apprentice could not pay. It is remembered here
-   * rather than read back off the ledger, because there is nothing left in the
-   * ledger to read: the run is swept the moment the price is refused.
+   * A run ended by a price the player could not pay. It is remembered here
+   * rather than read back off the scoreboard, because there is nothing left in
+   * the scoreboard to read: the run is swept the moment the price is refused.
    */
   const [pricedOut, setPricedOut] = useState<RunsEnd | null>(null)
 
-  const bench = useRef<HTMLOListElement | null>(null)
+  const flasksRef = useRef<HTMLOListElement | null>(null)
   const slots = useRef<(HTMLLIElement | null)[]>([])
   const pour = usePourFlight({
     board: game.board,
     selectedIndex: game.selectedIndex,
-    bench,
+    flasksRef,
     slots,
     onTap: game.tapFlask,
     speed
@@ -78,20 +79,20 @@ export function Game({
     if (game.isSolved) celebrateLevel()
   }, [game.isSolved])
 
-  const total = totalScore({ banked: bankedScore, bench: game.score })
-  const isLastBench = onNextLevel === null
+  const total = totalScore({ banked: bankedScore, current: game.score })
+  const isLastLevel = onNextLevel === null
   const restartPrice = priceOfRestart(position)
   const canRestart = canPayForRestart({ banked: bankedScore, position })
 
   /*
    * The ending nobody pressed for is asked after on every render rather than
-   * watched for: a bench runs dry the moment the last pour on it is spent, and
+   * watched for: a level runs dry the moment the last pour on it is spent, and
    * nothing is pressed to make that happen.
    */
   const ending =
     pricedOut ?? endOfRun({ board: game.board, banked: bankedScore, position })
 
-  // The save is wiped rather than written over, so the bench the apprentice was
+  // The save is wiped rather than written over, so the board the player was
   // on cannot be waiting for them at the next reload.
   const sweepTheRun = () => {
     game.restart()
@@ -99,8 +100,8 @@ export function Game({
   }
 
   /*
-   * A price the apprentice cannot pay ends the run there and then, sweeping it
-   * as it goes rather than waiting for the card to be answered: closing the tab
+   * A price the player cannot pay ends the run there and then, sweeping it as
+   * it goes rather than waiting for the card to be answered: closing the tab
    * is not a way out of a run, and it must not become one for the run that has
    * just ended.
    */
@@ -114,7 +115,7 @@ export function Game({
     sweepTheRun()
   }
 
-  const restartBench = () => {
+  const restartLevel = () => {
     if (!canRestart) {
       endTheRun({ kind: 'restart', price: restartPrice })
       return
@@ -142,7 +143,7 @@ export function Game({
         minimumPours={level.minimumPours}
       />
 
-      <ol className='bench' aria-label='Flask bench' ref={bench}>
+      <ol className='bench' aria-label='Flasks' ref={flasksRef}>
         {game.board.map((flask, index) => (
           <li
             key={index}
@@ -168,7 +169,7 @@ export function Game({
         ))}
 
         {/* The elixir in the air, drawn between the tipped flask and the one
-            filling: it belongs to the bench rather than to either flask. */}
+            filling: it belongs to the board rather than to either flask. */}
         {pour.stream !== null && (
           <motion.span
             className='pour-stream'
@@ -189,14 +190,15 @@ export function Game({
         )}
       </ol>
 
-      <SpeedSlider speed={speed} onSpeedChange={setSpeed} />
-
-      <Restart
-        onRestart={restartBench}
-        price={restartPrice}
-        forfeited={forfeited}
-        wouldEndTheRun={!canRestart}
-      />
+      <Menu>
+        <SpeedSlider speed={speed} onSpeedChange={setSpeed} />
+        <Restart
+          onRestart={restartLevel}
+          price={restartPrice}
+          forfeited={forfeited}
+          wouldEndTheRun={!canRestart}
+        />
+      </Menu>
 
       <AnimatePresence>
         {game.isSolved && (
@@ -216,18 +218,18 @@ export function Game({
               <h2 className='victory__title'>Elixirs sorted!</h2>
 
               {/* "Final" only when it is: the word was telling players on the
-                  first bench that they had reached the end of the game. */}
+                  first level that they had reached the end of the game. */}
               <p className='victory__score'>
-                {isLastBench ? 'Final score' : 'Score'} {game.score} of {worth}
+                {isLastLevel ? 'Final score' : 'Score'} {game.score} of {worth}
               </p>
               <p className='victory__detail'>
                 Pours spent: {game.pours} · Fewest possible:{' '}
                 {level.minimumPours}
               </p>
 
-              {/* The card covers the whole atelier, so it has to carry the
+              {/* The card covers the whole campaign, so it has to carry the
                   progress the header behind it would otherwise show. A bar
-                  rather than a pip per bench: fifty of those ran off the
+                  rather than a pip per level: fifty of those ran off the
                   side of the card. */}
               <div className='victory__progress'>
                 <div
@@ -247,11 +249,11 @@ export function Game({
                   />
                 </div>
                 <p className='victory__sorted' id={sortedId}>
-                  Bench {position} of {levelCount} sorted
+                  Level {position} of {levelCount} sorted
                 </p>
                 <p className='victory__closing'>
-                  {isLastBench
-                    ? `Every bench in the atelier is sorted, for ${total} of ${perfectTotal}.`
+                  {isLastLevel
+                    ? `Every level is sorted, for ${total} of ${perfectTotal}.`
                     : `${levelCount - position} more to sort.`}
                 </p>
               </div>
@@ -270,7 +272,7 @@ export function Game({
                 <button
                   type='button'
                   className='button button--quiet'
-                  autoFocus={isLastBench}
+                  autoFocus={isLastLevel}
                   onClick={game.restart}
                 >
                   Play again
@@ -281,8 +283,8 @@ export function Game({
         )}
       </AnimatePresence>
 
-      {/* The end of the run covers everything, the bench included: there is
-          nothing left on it the apprentice could pay their way out with. */}
+      {/* The end of the run covers everything, the board included: there is
+          nothing left on it the player could pay their way out with. */}
       <AnimatePresence>
         {ending !== null && (
           <GameOver ending={ending} onBeginAgain={beginANewRun} />

@@ -3,7 +3,7 @@ import { playSound } from '../audio/sounds'
 import type { Game, LastTap } from './useGame'
 import type { SoundName } from '../audio/sounds'
 
-/** Gives the bench its voice. Reacts to the game; never changes it. */
+/** Gives the board its voice. Reacts to the game; never changes it. */
 export function useGameSounds(game: Game): void {
   useEffect(() => {
     const sound = soundForTap(game.lastTap)

@@ -31,7 +31,7 @@ export function seal(value: unknown): string {
 /**
  * Opens a sealed value, or gives back null if it was edited, cut short, or
  * never sealed in the first place. A refused save is not an error to report:
- * the game simply has nothing to go back to, and lays out the first bench.
+ * the game simply has nothing to go back to, and lays out the first level.
  */
 export function unseal(sealed: string): unknown {
   const bytes = decode(sealed)

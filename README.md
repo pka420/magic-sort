@@ -1,8 +1,7 @@
 # Magic Sort
 
-A liquid-sorting puzzle game built in React, themed as a medieval alchemist's
-atelier: an apprentice pours mixed elixirs between glass flasks until each one
-holds a single pure colour.
+A liquid-sorting puzzle game built in React: pour mixed elixirs between glass
+flasks until each one holds a single pure colour.
 
 It is a portfolio project, so the code and the tests are the point as much as
 the game is. No backend, no network calls, no CDN assets — it builds to static
@@ -15,60 +14,60 @@ target is empty, or its top layer matches what you are pouring, and it has room
 to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
-Fifty benches make up the atelier, grouped into shelves by the mechanic they
-share. The opening five teach the game itself, climbing by the number of elixirs
-in play and then by taking spare flasks away. Every shelf after that introduces
-one mechanic and gets exactly one roomy bench to learn it on before the room is
-taken back: taller glass, five layers to a flask instead of four; benches of
-mixed glass where a three-layer vial stands beside a five-layer flask; the deep
-six-layer glass and then the seven-layer decanter; the whole cabinet of sizes at
-once; and, on the late shelves, room that is scattered rather than pooled — no
+Fifty levels make up the campaign, grouped into tiers by the mechanic they
+introduce. The opening five teach the game itself, climbing by the number of
+elixirs in play and then by taking spare flasks away. Every tier after that
+introduces one mechanic and gets exactly one roomy level to learn it on before
+the extra room is taken back: taller glass, five layers to a flask instead of
+four; levels of mixed glass where a three-layer vial stands beside a five-layer
+flask; the deep six-layer glass and then the seven-layer decanter; every size at
+once; and, on the late tiers, room that is scattered rather than pooled — no
 flask stands empty at the outset, the free layers are spread through part-filled
 glass, and there is nowhere to pour a whole run out to. Mixed glass changes the
 puzzle: an elixir can only be sealed in a flask its layers exactly fill, so the
 short elixirs have only the vials to end up in. Eight elixirs are in play by the
-end, on benches of nine flasks. Solving a bench opens the next.
+end, on levels of nine flasks. Solving a level opens the next.
 
-Difficulty is measured in possibilities rather than in pours. Every bench is
+Difficulty is measured in possibilities rather than in pours. Every level is
 searched exhaustively, and what the search counts is how many of the
 arrangements it can be poured into can no longer be sorted — how much of the
-bench is a trap. A bench with a spare flask loses under a tenth of its
-arrangements; a bench without one loses a third or more of them, and the last
-bench of the atelier can be lost in more ways than any other. Pour counts do not
-rank benches at all: the five-elixir bench with one spare takes fewer pours than
-the six-elixir bench with two, and every player finds it harder.
+level is a trap. A level with a spare flask loses under a tenth of its
+arrangements; a level without one loses a third or more of them, and the last
+level of the campaign can be lost in more ways than any other. Pour counts do
+not rank levels at all: the five-elixir level with one spare takes fewer pours
+than the six-elixir level with two, and every player finds it harder.
 
-Each bench pays more than the one before it. The first is worth 1000 — half of
+Each level pays more than the one before it. The first is worth 1000 — half of
 it shared out across the flasks you sort, half for solving in as few pours as
-the bench allows, minus a fortieth of the bench for every pour past that — and
-the fiftieth is worth 50000, so a flawless atelier comes to 1275000. That ladder
-is the whole economy: pressing on into the benches that are hard to sort has to
-out-earn sorting the easy ones over and over. Starting a bench over is the way
-out of a mistake, but it is not free: the button has to be held down while a bar
-fills, and it costs a tenth of the bench being thrown away, out of the points
-you have banked — the half-sorted bench goes down the drain with the elixirs on
-it. Going back to the very first bench is a separate button, and it asks first —
-it is a rebirth rather than a wipe, so everything you have earned comes with you,
-including what the bench in hand earned, but it costs the whole atelier behind
-you and the bench you are standing on, which is always more than sorting those
-benches again could pay back.
+the level allows, minus a fortieth of the level for every pour past that — and
+the fiftieth is worth 50000, so a flawless campaign comes to 1275000. That
+ladder is the whole economy: pressing on into the levels that are hard to sort
+has to out-earn sorting the easy ones over and over. Starting a level over is
+the way out of a mistake, but it is not free: the button has to be held down
+while a bar fills, and it costs a tenth of the level being thrown away, out of
+the points you have banked — the half-sorted level goes down the drain with the
+elixirs on it. Going back to the very first level is a separate button, and it
+asks first — it is a rebirth rather than a wipe, so everything you have earned
+comes with you, including what the level in hand earned, but it costs the whole
+campaign behind you and the level you are standing on, which is always more than
+sorting those levels again could pay back.
 
 Nothing here is bought on credit. The score never goes below nothing, so a price
 you cannot pay is not a debt: it is the end of the run. Hold the restart with
-less banked than it costs, or confirm a walk back you cannot afford, and the
-workshop closes — both buttons say so before you press them, and all that is
-left is to begin again from nothing. On the first bench of a fresh run there is
-nothing banked at all, so those two buttons are the way out of a run as much as
-they are a way back into it.
+less banked than it costs, or confirm a walk back you cannot afford, and the run
+ends — both buttons say so before you press them, and all that is left is to
+begin again from nothing. On the first level of a fresh run there is nothing
+banked at all, so those two buttons are the way out of a run as much as they are
+a way back into it.
 
-A run can also end on the bench in front of you, without anything being pressed.
-A bench can be poured into a corner where nothing will take another drop — every
-glass full, and no two tops that match — and if you cannot pay to lay that one
-out again, it is the end of the run as surely as the buttons are. The game works
-it out for you rather than leaving you tapping glass that will never move.
+A run can also end on the level in front of you, without anything being pressed.
+A level can be poured into a corner where nothing will take another drop — every
+glass full, and no two tops that match — and if you cannot pay to restart it, it
+is the end of the run as surely as the buttons are. The game works it out for
+you rather than leaving you tapping glass that will never move.
 
 The run is kept in the browser, so closing the tab is not a way out of one
-either: the bench comes back with the pours already spent on it, and the total
+either: the level comes back with the pours already spent on it, and the total
 comes back with it. It is sealed on the way in — scrambled, and signed so that a
 save which has been edited is refused rather than believed. That stops a player
 editing their score in developer tools, and honestly only that: the key ships
@@ -76,10 +75,10 @@ inside the bundle, because the game has no server to keep a score on, and a key
 everybody has is not a secret. Making a score truly unforgeable is a different
 game to this one.
 
-A run that ends is erased rather than zeroed — every point and every bench, gone
-— and the save is swept at the moment the price is refused rather than when the
-card is answered, because closing the tab must not be a way out of a run that is
-already over either.
+A run that ends is erased rather than zeroed — every point and every level,
+gone — and the save is swept at the moment the price is refused rather than when
+the card is answered, because closing the tab must not be a way out of a run
+that is already over either.
 
 ## Getting set up
 
@@ -182,7 +181,7 @@ owns the domain uses. Three hostnames serve this same build, and naming one
 original keeps them from competing as three copies of one page — including the
 Pages URL, which advertises the custom domain because it serves the same file.
 
-The image is `public/social-card.jpg`, a screenshot of the real atelier taken by
+The image is `public/social-card.jpg`, a screenshot of the real game taken by
 `npm run social-card` through the Chromium the e2e test already needs. It is
 generated rather than drawn so it cannot drift from the game it advertises, and
 committed, like the sound effects, so that deploying stays a plain build. Its
@@ -249,7 +248,7 @@ Kept deliberately short. Beyond React and the toolchain:
 The sound effects are synthesised by `scripts/generate-sounds.mjs` rather than
 downloaded, which keeps the repository self-contained. It takes sound names on
 the command line — `npm run sounds -- defeat` — because three of the recipes are
-built on noise, and regenerating the whole bench to add one sound rewrites files
+built on noise, and regenerating the whole set to add one sound rewrites files
 nobody touched with fresh random samples. Two sounds are the exception to the
 recipes: the rebirth and the end of a run are recorded tracks at
 `src/audio/revive.mp3` and `defeat.mp3`, and the generator has no entry for them
@@ -260,17 +259,17 @@ so that re-running it cannot overwrite them.
 The game ships in vertical slices — each one playable on its own.
 
 - [x] **Slice 1** — one level, pouring, scoring, sound, animation, win state.
-- [x] **Slice 2** — ten levels on two shelves, progression between them, a
+- [x] **Slice 2** — ten levels across two tiers, progression between them, a
       score out of 1000.
-- [x] **Slice 3** — fourteen benches, a shelf per mechanic, flasks that carry
+- [x] **Slice 3** — fourteen levels, a tier per mechanic, flasks that carry
       their own glass size, and a pour that tips and falls.
 - [x] **Slice 4** — a run that survives the tab closing, sealed against editing,
       and a start over that costs points rather than everything.
-- [x] **Slice 5** — fifty benches measured by the possibilities they open, two
-      more elixirs, benches whose room is scattered rather than pooled, a bench
+- [x] **Slice 5** — fifty levels measured by the possibilities they open, two
+      more elixirs, levels whose room is scattered rather than pooled, a level
       worth more than the one before it, and a run that can end in ruin.
 - [ ] **Slice 6** — undo.
-- [ ] **Slice 7** — the alchemist character, ingredient collection, boosts.
+- [ ] **Slice 7** — ingredient collection, boosts.
 
 ## Conventions
 

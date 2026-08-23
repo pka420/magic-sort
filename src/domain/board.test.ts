@@ -56,7 +56,7 @@ describe('isSolved', () => {
     expect(isSolved(board)).toBe(false)
   })
 
-  it('holds a bench of mixed glass to each flask its own brim', () => {
+  it('holds a board of mixed glass to each flask its own brim', () => {
     const board: Board = [
       glass(5, 'crimson', 'crimson', 'crimson', 'crimson', 'crimson'),
       glass(3, 'azure', 'azure', 'azure'),
@@ -97,9 +97,9 @@ describe('isStuck', () => {
     expect(isStuck(board)).toBe(false)
   })
 
-  /* A bench with nowhere to pour because it is finished is not a bench to end
+  /* A board with nowhere to pour because it is finished is not a board to end
      a run over. */
-  it('is false on a sorted bench, which has run out of pours by winning', () => {
+  it('is false on a sorted board, which has run out of pours by winning', () => {
     const board: Board = [
       glass(4, 'crimson', 'crimson', 'crimson', 'crimson'),
       glass(4, 'azure', 'azure', 'azure', 'azure')
@@ -108,7 +108,7 @@ describe('isStuck', () => {
     expect(isStuck(board)).toBe(false)
   })
 
-  /* Mixed glass is where this bites: the room left on the bench is in a vial
+  /* Mixed glass is where this bites: the room left on the board is in a vial
      the runs beside it are too tall to be poured into. */
   it('is true when the only room left turns away the tops that could fill it', () => {
     const board: Board = [
@@ -144,7 +144,7 @@ describe('completedFlaskCount', () => {
 })
 
 describe('flasksToFill', () => {
-  it('counts one flask for every elixir the bench holds', () => {
+  it('counts one flask for every elixir the board holds', () => {
     const board: Board = [
       glass(4, 'crimson', 'azure', 'verdant'),
       glass(4, 'azure', 'crimson'),
@@ -155,7 +155,7 @@ describe('flasksToFill', () => {
     expect(flasksToFill(board)).toBe(3)
   })
 
-  it('ignores the empty flasks a sorted bench leaves behind', () => {
+  it('ignores the empty flasks a sorted board leaves behind', () => {
     const board: Board = [
       glass(4, 'crimson', 'crimson', 'crimson', 'crimson'),
       emptyFlask(4),

@@ -10,8 +10,9 @@ type FlaskContents = readonly Elixir[]
 
 /**
  * How long poured elixir takes to settle. The confetti and the wobble wait for
- * it, and the golden seal is held back by the same delay in CSS: celebrating
- * while the last layer is still on its way is what made the pour look late.
+ * it, and the sealed styling is held back by the same delay in CSS:
+ * celebrating while the last layer is still on its way is what made the pour
+ * look late.
  */
 const SETTLE_MS = 190
 
@@ -119,10 +120,10 @@ export function Flask({
 }
 
 /*
- * The size of the glass is part of what a flask is once the benches mix them:
- * an elixir can only ever be sealed in a flask its layers exactly fill, so a
- * player who cannot see the squat vial next to the tall one still has to know
- * which of the two they are about to pour into.
+ * The size of the glass is part of what a flask is once the levels mix glass
+ * sizes: an elixir can only ever be sealed in a flask its layers exactly fill,
+ * so a player who cannot see the squat vial next to the tall one still has to
+ * know which of the two they are about to pour into.
  */
 function describeFlask(
   position: number,

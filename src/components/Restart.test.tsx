@@ -5,7 +5,7 @@ import { Restart } from './Restart'
 import { playSound } from '../audio/sounds'
 
 // Audio is a real boundary: there is no speaker in a test run. It is also part
-// of what is under test here — a thrown-away bench is poured back out loudly.
+// of what is under test here — a thrown-away level is poured back out loudly.
 vi.mock('../audio/sounds', () => ({
   playSound: vi.fn(),
   stopSound: vi.fn(),
@@ -40,7 +40,7 @@ beforeEach(() => {
 })
 
 describe('Restart', () => {
-  it('throws the bench away the moment it is clicked', async () => {
+  it('throws the level away the moment it is clicked', async () => {
     const user = userEvent.setup()
     const restart = showButton()
 
@@ -49,7 +49,7 @@ describe('Restart', () => {
     expect(restart).toHaveBeenCalledTimes(1)
   })
 
-  it('pours the bench back out audibly', async () => {
+  it('pours the level back out audibly', async () => {
     const user = userEvent.setup()
     showButton()
 
@@ -58,7 +58,7 @@ describe('Restart', () => {
     expect(vi.mocked(playSound).mock.calls).toEqual([['reset']])
   })
 
-  /* A press nobody comes back from must not sound like a bench being poured
+  /* A press nobody comes back from must not sound like a level being poured
      back out: the card that closes the run has a voice of its own. */
   it('lands silently when the click is the end of the run', async () => {
     const user = userEvent.setup()
@@ -78,8 +78,8 @@ describe('Restart', () => {
     )
   })
 
-  /* A later bench pays more, so throwing one away costs more. */
-  it('names the price of the bench actually being thrown away', () => {
+  /* A later level pays more, so throwing one away costs more. */
+  it('names the price of the level actually being thrown away', () => {
     showButton({ price: 2600 })
 
     expect(restartButton()).toHaveAccessibleDescription(
@@ -89,7 +89,7 @@ describe('Restart', () => {
 
   /*
    * What has been given up, not what restarts have given up: naming restarts
-   * alone would have this line telling an apprentice who has never restarted
+   * alone would have this line telling a player who has never restarted
    * that restarts cost them a thousand points.
    */
   it('owns up to what the campaign has given up so far', () => {
@@ -101,11 +101,11 @@ describe('Restart', () => {
   })
 
   /*
-   * A restart is paid for out of banked points, and on the first bench of a
+   * A restart is paid for out of banked points, and on the first level of a
    * fresh run there are none: pressing this is the end of the run. Saying so
    * before it is pressed is what makes it a decision rather than an ambush.
    */
-  it('warns the apprentice whose restart would end their run', () => {
+  it('warns the player whose restart would end their run', () => {
     showButton({ wouldEndTheRun: true })
 
     expect(restartButton()).toHaveAccessibleDescription(

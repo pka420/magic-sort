@@ -2,12 +2,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   forgetSavedRun,
   readSavedRun,
-  rememberBench,
+  rememberProgress,
   rememberCampaign
 } from './savedRun'
 import { seal } from '../domain/vault'
 import { lendStorage, refuseToRemember } from '../test/storage'
-import type { SavedBench, SavedCampaign } from './savedRun'
+import type { SavedProgress, SavedCampaign } from './savedRun'
 
 const halfway: SavedCampaign = {
   reached: 6,
@@ -16,8 +16,8 @@ const halfway: SavedCampaign = {
   rebirths: 1
 }
 
-const midPour: SavedBench = {
-  levelId: 'apprentice',
+const midPour: SavedProgress = {
+  levelId: 1,
   pours: 3,
   board: [
     { capacity: 4, contents: ['crimson', 'azure'] },
@@ -54,32 +54,32 @@ describe('savedRun', () => {
 
     rememberCampaign(halfway)
 
-    expect(readSavedRun()).toEqual({ campaign: halfway, bench: null })
+    expect(readSavedRun()).toEqual({ campaign: halfway, progress: null })
   })
 
-  it('keeps the bench the apprentice is standing at alongside the campaign', () => {
+  it('keeps the level the player is standing at alongside the campaign', () => {
     lendStorage()
 
     rememberCampaign(halfway)
-    rememberBench(midPour)
+    rememberProgress(midPour)
 
-    expect(readSavedRun()).toEqual({ campaign: halfway, bench: midPour })
+    expect(readSavedRun()).toEqual({ campaign: halfway, progress: midPour })
   })
 
-  it('leaves the bench standing when only the campaign moves on', () => {
+  it('leaves the progress standing when only the campaign moves on', () => {
     lendStorage()
-    rememberBench(midPour)
+    rememberProgress(midPour)
 
     rememberCampaign(halfway)
 
-    expect(readSavedRun()?.bench).toEqual(midPour)
+    expect(readSavedRun()?.progress).toEqual(midPour)
   })
 
-  it('leaves the campaign standing when only the bench changes', () => {
+  it('leaves the campaign standing when only the progress changes', () => {
     lendStorage()
     rememberCampaign(halfway)
 
-    rememberBench(midPour)
+    rememberProgress(midPour)
 
     expect(readSavedRun()?.campaign).toEqual(halfway)
   })
@@ -115,7 +115,7 @@ describe('savedRun', () => {
   /*
    * A save sealed by an older build of the game, whose shape has since moved
    * on. The seal is sound, so only the shape can turn it away — and it has to,
-   * because the game would otherwise lay a bench out from nonsense.
+   * because the game would otherwise lay a level out from nonsense.
    */
   it('refuses a properly sealed save that is not a run at all', () => {
     const kept = lendStorage()
@@ -128,21 +128,21 @@ describe('savedRun', () => {
   })
 
   /*
-   * A bench is the one part of a run that can be given up on its own: laying a
-   * fresh one out costs the apprentice the pours they had spent, but it beats
+   * Progress is the one part of a run that can be given up on its own: laying
+   * a fresh one out costs the player the pours they had spent, but it beats
    * throwing away a campaign that is still perfectly readable.
    */
-  it('drops a bench it no longer understands without losing the campaign', () => {
+  it('drops progress it no longer understands without losing the campaign', () => {
     const kept = lendStorage()
     rememberCampaign(halfway)
     const [key] = onlyEntry(kept)
 
-    kept.set(key, seal({ campaign: halfway, bench: { levelId: 7 } }))
+    kept.set(key, seal({ campaign: halfway, progress: { levelId: 'seven' } }))
 
-    expect(readSavedRun()).toEqual({ campaign: halfway, bench: null })
+    expect(readSavedRun()).toEqual({ campaign: halfway, progress: null })
   })
 
-  it('drops a bench whose board is not a board at all', () => {
+  it('drops progress whose board is not a board at all', () => {
     const kept = lendStorage()
     rememberCampaign(halfway)
     const [key] = onlyEntry(kept)
@@ -151,16 +151,16 @@ describe('savedRun', () => {
       key,
       seal({
         campaign: halfway,
-        bench: { levelId: 'apprentice', pours: 1, board: 'a bench, honest' }
+        progress: { levelId: 1, pours: 1, board: 'a board, honest' }
       })
     )
 
-    expect(readSavedRun()?.bench).toBeNull()
+    expect(readSavedRun()?.progress).toBeNull()
   })
 
   /*
    * One bad flask condemns the whole board rather than being quietly dropped
-   * from it: a bench missing a flask is a puzzle that may no longer be
+   * from it: a level missing a flask is a puzzle that may no longer be
    * solvable, which is worse than laying the level out again.
    */
   it('drops a board holding anything that is not a flask', () => {
@@ -172,23 +172,23 @@ describe('savedRun', () => {
       key,
       seal({
         campaign: halfway,
-        bench: {
-          levelId: 'apprentice',
+        progress: {
+          levelId: 1,
           pours: 1,
           board: [{ capacity: 4, contents: [] }, { capacity: 'four' }]
         }
       })
     )
 
-    expect(readSavedRun()?.bench).toBeNull()
+    expect(readSavedRun()?.progress).toBeNull()
   })
 
-  it('refuses a save that has a bench but no campaign to put it in', () => {
+  it('refuses a save that has progress but no campaign to put it in', () => {
     const kept = lendStorage()
     rememberCampaign(halfway)
     const [key] = onlyEntry(kept)
 
-    kept.set(key, seal({ bench: midPour }))
+    kept.set(key, seal({ progress: midPour }))
 
     expect(readSavedRun()).toBeNull()
   })
@@ -203,12 +203,12 @@ describe('savedRun', () => {
 
   /*
    * Erasing a run has to take the save with it rather than write an empty one
-   * over the top: what the apprentice asked for is to be gone from the machine.
+   * over the top: what the player asked for is to be gone from the machine.
    */
   it('leaves nothing behind when the run is forgotten', () => {
     const kept = lendStorage()
     rememberCampaign(halfway)
-    rememberBench(midPour)
+    rememberProgress(midPour)
 
     forgetSavedRun()
 

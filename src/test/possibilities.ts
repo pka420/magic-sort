@@ -2,24 +2,24 @@ import { canPourBetween, isSolved, pourBetween } from '../domain/board'
 import type { Board } from '../domain/board'
 
 export interface Possibilities {
-  /** Every arrangement the bench can be poured into, itself included. */
+  /** Every arrangement the board can be poured into, itself included. */
   readonly reachable: number
   /** How many of those can no longer be sorted, whatever is poured next. */
   readonly lost: number
 }
 
 /**
- * The size and the shape of the space a bench opens up.
+ * The size and the shape of the space a board opens up.
  *
- * Test support rather than game code, and the measure the atelier's difficulty
- * is built on: how hard a bench is has nothing to do with how many pours it
- * takes to sort — the five-elixir bench with one spare takes fewer pours than
- * the six-elixir bench with two, and every player finds it harder. What they
- * are feeling is the room. A bench with a spare flask can be poured back out
- * of almost anywhere; a bench without one turns half of its own arrangements
- * into traps, and the apprentice has to see them coming.
+ * Test support rather than game code, and the measure the campaign's difficulty
+ * is built on: how hard a board is has nothing to do with how many pours it
+ * takes to sort — the five-elixir board with one spare takes fewer pours than
+ * the six-elixir board with two, and every player finds it harder. What they
+ * are feeling is the room. A board with a spare flask can be poured back out
+ * of almost anywhere; a board without one turns half of its own arrangements
+ * into traps, and the player has to see them coming.
  *
- * Two benches holding the same flasks in a different order are the same
+ * Two boards holding the same flasks in a different order are the same
  * arrangement, so they are counted once.
  */
 export function possibilitiesOf(board: Board): Possibilities {
@@ -47,12 +47,12 @@ function walk(opening: Board): Arrangement[] {
 
     for (const [source, target] of legalPours(from.board)) {
       const poured = pourBetween(from.board, source, target)
-      const bench = fingerprint(poured)
+      const key = fingerprint(poured)
 
-      let landsOn = seen.get(bench)
+      let landsOn = seen.get(key)
       if (landsOn === undefined) {
         landsOn = arrangements.length
-        seen.set(bench, landsOn)
+        seen.set(key, landsOn)
         arrangements.push({ board: poured, pourInto: [] })
         unexplored.push(landsOn)
       }
@@ -64,7 +64,7 @@ function walk(opening: Board): Arrangement[] {
 }
 
 /**
- * Every arrangement with a route back to a sorted bench, found by walking the
+ * Every arrangement with a route back to a sorted board, found by walking the
  * pours backwards from the sorted ones rather than searching forwards from
  * each arrangement in turn.
  */
@@ -108,7 +108,7 @@ function legalPours(board: Board): [number, number][] {
 
 /*
  * The same fingerprint the shortest-solution search uses: flasks sorted, so
- * that two benches holding the same glass in a different order count once, and
+ * that two boards holding the same glass in a different order count once, and
  * the size of a glass part of what it is.
  */
 function fingerprint(board: Board): string {

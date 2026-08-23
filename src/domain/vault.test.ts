@@ -38,13 +38,13 @@ describe('unseal', () => {
   })
 
   it('carries a value through with its nesting and its types intact', () => {
-    const bench = {
-      levelId: 'apprentice',
+    const save = {
+      levelId: 1,
       pours: 3,
       board: [{ capacity: 4, contents: ['crimson', 'azure'] }]
     }
 
-    expect(unseal(seal(bench))).toEqual(bench)
+    expect(unseal(seal(save))).toEqual(save)
   })
 
   it('carries text a Latin-1 byte cannot hold', () => {

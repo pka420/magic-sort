@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test'
  * comes back the way it went in — and whether a save the player has edited is
  * turned away rather than believed.
  */
-test('an apprentice comes back to their run, but not to an edited one', async ({
+test('a player comes back to their run, but not to an edited one', async ({
   page
 }) => {
   await page.goto('./')
@@ -20,7 +20,7 @@ test('an apprentice comes back to their run, but not to an edited one', async ({
 
   await page.reload()
 
-  // The bench comes back mid-solve: closing the tab is not a free restart.
+  // The level comes back mid-solve: closing the tab is not a free restart.
   await expect(pours).toHaveText('1')
 
   const edited = await page.evaluate(() => {
@@ -41,8 +41,8 @@ test('an apprentice comes back to their run, but not to an edited one', async ({
 
   await page.reload()
 
-  // Refused outright: an apprentice who edits the save gets the atelier from
-  // the first flask, not the level and score they typed in.
+  // Refused outright: a player who edits the save gets the game from the
+  // first flask, not the level and score they typed in.
   await expect(pours).toHaveText('0')
   await expect(page.getByText(/level 1 of/i)).toBeVisible()
 })

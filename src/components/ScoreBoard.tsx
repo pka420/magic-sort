@@ -4,9 +4,9 @@ import { pourPenalty } from '../domain/scoring'
 
 interface ScoreBoardProps {
   readonly score: number
-  /** What a flawless run of this bench pays, which is what it is scored out of. */
+  /** What a flawless run of this level pays, which is what it is scored out of. */
   readonly worth: number
-  /** The whole campaign so far, this bench included. */
+  /** The whole campaign so far, this level included. */
   readonly totalScore: number
   readonly perfectTotal: number
   readonly pours: number
@@ -32,7 +32,7 @@ export function ScoreBoard({
       {/* This used to be a bare stat labelled "Par", which reads as golf to
           everyone who has not played golf. Spell the rule out instead. */}
       <p className='scoreboard__hint'>
-        This bench can be sorted in {minimumPours} pours. Every pour past that
+        This level can be sorted in {minimumPours} pours. Every pour past that
         costs {pourPenalty(worth)} points.
       </p>
     </div>

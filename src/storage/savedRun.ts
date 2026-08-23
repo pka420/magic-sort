@@ -3,40 +3,40 @@ import type { Board } from '../domain/board'
 import type { Elixir } from '../domain/flask'
 
 /*
- * The run an apprentice comes back to, kept in the browser and sealed on the
- * way in. Storage is a boundary rather than a rule, which is why this sits
- * outside the domain: the sealing is pure and lives in the vault, and what is
- * left here is the one impure act of writing it down.
+ * The run a player comes back to, kept in the browser and sealed on the way
+ * in. Storage is a boundary rather than a rule, which is why this sits outside
+ * the domain: the sealing is pure and lives in the vault, and what is left
+ * here is the one impure act of writing it down.
  *
  * It is deliberately one save rather than two. A player who deletes it loses
  * the level and the score together, so there is nothing to be gained by
- * reaching for it — where a separate bench would have let them wipe a botched
- * board and keep the campaign, which is a free restart.
+ * reaching for it — where a separate board would have let them wipe a botched
+ * layout and keep the campaign, which is a free restart.
  */
 const KEPT_AS = 'magic-sort:run'
 
 export interface SavedCampaign {
-  /** How far into the atelier the apprentice has reached, counted from zero. */
+  /** How far into the campaign the player has reached, counted from zero. */
   readonly reached: number
   readonly earned: number
   readonly forfeited: number
   readonly rebirths: number
 }
 
-export interface SavedBench {
+export interface SavedProgress {
   /** Which level this board was laid out from, so a stale one can be spotted. */
-  readonly levelId: string
+  readonly levelId: number
   readonly board: Board
   readonly pours: number
 }
 
 export interface SavedRun {
   readonly campaign: SavedCampaign
-  /** Null when the apprentice is at a bench exactly as it was laid out. */
-  readonly bench: SavedBench | null
+  /** Null when the player is at a level exactly as it was laid out. */
+  readonly progress: SavedProgress | null
 }
 
-/** Where an apprentice stands before they have earned anything at all. */
+/** Where a player stands before they have earned anything at all. */
 const FRESH_CAMPAIGN: SavedCampaign = {
   reached: 0,
   earned: 0,
@@ -50,26 +50,26 @@ export function readSavedRun(): SavedRun | null {
 
 /*
  * Each half of the run is written down by the part of the game that owns it,
- * and neither may drop the other on the way past — a bench is saved before a
+ * and neither may drop the other on the way past — a board is saved before a
  * campaign on the very first visit, because React runs a child's effects
  * before its parent's, and the save has to come out the same either way.
  */
 export function rememberCampaign(campaign: SavedCampaign): void {
-  write({ campaign, bench: readSavedRun()?.bench ?? null })
+  write({ campaign, progress: readSavedRun()?.progress ?? null })
 }
 
 /**
  * Writes down the board mid-solve, so that coming back is not a free restart:
- * a reload has to hand the apprentice the pours they had already spent.
+ * a reload has to hand the player the pours they had already spent.
  */
-export function rememberBench(bench: SavedBench): void {
-  write({ campaign: readSavedRun()?.campaign ?? FRESH_CAMPAIGN, bench })
+export function rememberProgress(progress: SavedProgress): void {
+  write({ campaign: readSavedRun()?.campaign ?? FRESH_CAMPAIGN, progress })
 }
 
 /**
- * Wipes the run off the machine. An apprentice erasing their run is asking to
- * be gone rather than to be zeroed, so the entry is removed outright — the
- * fresh run that follows writes its own.
+ * Wipes the run off the machine. A player erasing their run is asking to be
+ * gone rather than to be zeroed, so the entry is removed outright — the fresh
+ * run that follows writes its own.
  */
 export function forgetSavedRun(): void {
   try {
@@ -103,7 +103,7 @@ function asSavedRun(value: unknown): SavedRun | null {
   const campaign = asCampaign(value.campaign)
   if (campaign === null) return null
 
-  return { campaign, bench: asBench(value.bench) }
+  return { campaign, progress: asProgress(value.progress) }
 }
 
 function asCampaign(value: unknown): SavedCampaign | null {
@@ -120,9 +120,9 @@ function asCampaign(value: unknown): SavedCampaign | null {
   }
 }
 
-function asBench(value: unknown): SavedBench | null {
+function asProgress(value: unknown): SavedProgress | null {
   if (!isRecord(value)) return null
-  if (typeof value.levelId !== 'string' || !isCount(value.pours)) return null
+  if (typeof value.levelId !== 'number' || !isCount(value.pours)) return null
 
   const board = asBoard(value.board)
   if (board === null) return null
@@ -145,7 +145,7 @@ function asFlask(value: unknown) {
   /*
    * The layers are taken at their word rather than checked against the six
    * elixirs. Only this game ever writes a save, and an unknown colour would
-   * paint a plain layer rather than break a bench — which is a far smaller
+   * paint a plain layer rather than break a board — which is a far smaller
    * price than teaching this boundary the palette.
    */
   return {

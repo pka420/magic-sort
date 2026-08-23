@@ -12,7 +12,7 @@ const twoElixirs: Board = [
 ]
 
 describe('shortestSolution', () => {
-  it('sorts a nearly finished bench in the single pour it has left', () => {
+  it('sorts a nearly finished board in the single pour it has left', () => {
     const board: Board = [
       { capacity: 4, contents: ['crimson', 'crimson', 'crimson'] },
       { capacity: 4, contents: ['crimson'] },
@@ -26,13 +26,13 @@ describe('shortestSolution', () => {
     expect(shortestSolution(twoElixirs)).toHaveLength(5)
   })
 
-  it('returns a route the bench accepts, with nothing left mixed at the end', () => {
+  it('returns a route the board accepts, with nothing left mixed at the end', () => {
     const route = shortestSolution(twoElixirs) ?? []
 
     // pourBetween throws on a pour the flasks would refuse, so replaying the
     // route is itself the check that every step of it is legal.
     const finished = route.reduce<Board>(
-      (bench, [source, target]) => pourBetween(bench, source, target),
+      (board, [source, target]) => pourBetween(board, source, target),
       twoElixirs
     )
 
@@ -41,7 +41,7 @@ describe('shortestSolution', () => {
     ).toEqual([])
   })
 
-  it('has nothing to pour on a bench that is already sorted', () => {
+  it('has nothing to pour on a board that is already sorted', () => {
     const board: Board = [
       filledFlask(['crimson', 'crimson', 'crimson', 'crimson']),
       emptyFlask(4)
@@ -50,7 +50,7 @@ describe('shortestSolution', () => {
     expect(shortestSolution(board)).toEqual([])
   })
 
-  it('reports a bench that no sequence of pours can sort', () => {
+  it('reports a board that no sequence of pours can sort', () => {
     const board: Board = [
       filledFlask(['crimson', 'azure', 'crimson', 'azure']),
       filledFlask(['azure', 'crimson', 'azure', 'crimson'])
@@ -59,7 +59,7 @@ describe('shortestSolution', () => {
     expect(shortestSolution(board)).toBeNull()
   })
 
-  it('seals a bench of mixed glass by pouring into the vial that fits', () => {
+  it('seals a board of mixed glass by pouring into the vial that fits', () => {
     const board: Board = [
       { capacity: 3, contents: ['crimson', 'crimson'] },
       { capacity: 3, contents: ['crimson'] },
@@ -69,7 +69,7 @@ describe('shortestSolution', () => {
     expect(shortestSolution(board)).toHaveLength(1)
   })
 
-  it('reports a bench whose elixirs no glass on it can fill to the brim', () => {
+  it('reports a board whose elixirs no glass on it can fill to the brim', () => {
     // Three layers of crimson and two of verdant, where every glass holds
     // five: no sequence of pours can seal either of them.
     const board: Board = [

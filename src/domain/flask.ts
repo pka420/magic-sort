@@ -1,4 +1,4 @@
-/** The elixirs an apprentice sorts. One colour per flask is the goal. */
+/** The elixirs a player sorts. One colour per flask is the goal. */
 export type Elixir =
   | 'crimson'
   | 'azure'
@@ -14,8 +14,8 @@ export interface Flask {
   readonly contents: readonly Elixir[]
   /**
    * How many layers this glass holds when full. It belongs to the flask rather
-   * than to the bench, because the later benches set them out mixed: a bench of
-   * five-layer glass with a three-layer vial on it is a bench where the elixir
+   * than to the board, because the later levels set them out mixed: a board of
+   * five-layer glass with a three-layer vial on it is a board where the elixir
    * that only fills three has exactly one place it can end up.
    */
   readonly capacity: number
@@ -26,19 +26,19 @@ export interface PourResult {
   readonly target: Flask
 }
 
-/** A glass poured full to its own brim, which is how a bench is laid out. */
+/** A glass poured full to its own brim, which is how a level is laid out. */
 export function filledFlask(contents: readonly Elixir[]): Flask {
   return { contents, capacity: contents.length }
 }
 
-/** A spare glass, which is the room a bench leaves the apprentice to think in. */
+/** A spare glass, which is the room a board leaves the player to think in. */
 export function emptyFlask(capacity: number): Flask {
   return { contents: [], capacity }
 }
 
 /**
- * A glass laid out with room still left in it. The later shelves scatter a
- * bench's room through part-filled glass instead of pooling it in a spare
+ * A glass laid out with room still left in it. The later tiers scatter a
+ * board's room through part-filled glass instead of pooling it in a spare
  * flask: the same free layers are there, but no single glass is empty enough
  * to take a run poured out of another.
  */

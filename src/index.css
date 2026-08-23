@@ -1,5 +1,5 @@
 /*
- * The atelier: a dark, arcane workshop lit by the elixirs themselves.
+ * The game: a dark scene lit by the elixirs themselves.
  * Everything here is hand-rolled CSS — no framework, no external fonts.
  */
 
@@ -18,9 +18,9 @@
   --amber: #ffb340;
   --violet: #a374ff;
   --pearl: #e8e4f7;
-  /* The two the late shelves add, picked so that they cost the palette
+  /* The two the later tiers add, picked so that they cost the palette
      nothing: the closest pair anyone sees is still azure and verdant under
-     tritanopia, exactly as it was with six elixirs on the bench. */
+     tritanopia, exactly as it was with six elixirs on the board. */
   --saffron: #ffe45e;
   --indigo: #4b46f0;
 
@@ -68,7 +68,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Drifting motes of dust caught in the candlelight. */
+/* Drifting motes of dust. */
 body::before {
   content: '';
   position: fixed;
@@ -172,34 +172,43 @@ body::before {
 
 /* ---------- Scoreboard ---------- */
 
+/*
+ * The scoreboard sits in the top right corner and stays out of the board's
+ * way: it is read between pours rather than watched, so it does not hold the
+ * centre of the screen.
+ */
 .scoreboard {
+  position: fixed;
+  z-index: 10;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  right: clamp(0.75rem, 2vw, 1.25rem);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.8rem;
+  align-items: flex-end;
+  gap: 0.5rem;
 }
 
 .scoreboard__stats {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
   margin: 0;
   padding: 0;
 }
 
 .scoreboard__hint {
-  max-width: 26rem;
+  max-width: 15rem;
   margin: 0;
-  text-align: center;
-  font-size: 0.82rem;
+  text-align: right;
+  font-size: 0.74rem;
   line-height: 1.5;
   color: var(--parchment-dim);
 }
 
 .stat {
-  min-width: 5.75rem;
-  padding: 0.6rem 1rem 0.7rem;
+  min-width: 5.5rem;
+  padding: 0.45rem 0.8rem 0.55rem;
   text-align: center;
   border: 1px solid var(--glass-edge);
   border-radius: 0.9rem;
@@ -209,23 +218,23 @@ body::before {
 }
 
 .stat__label {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--parchment-dim);
 }
 
 .stat__value {
-  margin: 0.15rem 0 0;
+  margin: 0.1rem 0 0;
   font-family: var(--display);
-  font-size: 1.55rem;
+  font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
   color: var(--parchment);
 }
 
 /* The ceiling is context, not the reading, so it stays quieter than the score. */
 .stat__ceiling {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--parchment-dim);
 }
 
@@ -243,7 +252,7 @@ body::before {
   position: relative;
 }
 
-/* The workbench the flasks stand on. */
+/* The line the flasks stand on. */
 .bench::after {
   content: '';
   position: absolute;
@@ -277,12 +286,12 @@ body::before {
 .pour-stream {
   position: absolute;
   /*
-   * Above the flasks standing on the bench, and below the one being filled:
-   * the elixir shows through the bottle it lands in, and passes in front of
-   * everything it merely crosses. It used to sit under the whole bench, which
-   * a single row hid — on a phone the bench wraps, and pouring into the row
-   * below sent the elixir behind the flask standing over the target.
-   */
+   * Above the flasks standing on the board, and below the one being filled:
+    * the elixir shows through the bottle it lands in, and passes in front of
+    * everything it merely crosses. It used to sit under the whole board, which
+    * a single row hid — on a phone the board wraps, and pouring into the row
+    * below sent the elixir behind the flask standing over the target.
+    */
   z-index: 2;
   width: 0.45rem;
   margin-left: -0.225rem;
@@ -329,9 +338,9 @@ body::before {
   --layers: 4;
   /*
    * Measured off the base rather than off the finished width, so a layer is
-   * the same thickness in every glass on the bench. A flask that holds more
-   * has to be taller, not more finely divided.
-   */
+    * the same thickness in every glass on the board. A flask that holds more
+    * has to be taller, not more finely divided.
+    */
   --layer-height: calc(var(--glass-base) * 0.43);
   --glass-girth: 1;
   --flask-width: calc(var(--glass-base) * var(--glass-girth));
@@ -407,8 +416,8 @@ body::before {
    * on an idle screen: a blurred shadow is repainted every frame it changes,
    * on every layer of every flask, and the colour had to be mixed again each
    * time. On a mid-range phone it cost 838ms of main thread in every three
-   * seconds of a bench nobody was touching. The breathing is not worth a
-   * third of the processor, and behind drifting bubbles nobody could see it.
+    * seconds of a board nobody was touching. The breathing is not worth a
+    * third of the processor, and behind drifting bubbles nobody could see it.
    */
   box-shadow: 0 0 20px color-mix(in srgb, var(--elixir) 60%, transparent);
 }
@@ -498,7 +507,7 @@ body::before {
   animation: surface-sway 3.4s ease-in-out infinite;
 }
 
-/* A band of light where the elixir catches the candle, just under the surface. */
+/* A band of light just under the surface. */
 .flask__layer:last-of-type::before {
   content: '';
   position: absolute;
@@ -570,9 +579,9 @@ body::before {
 /*
  * The halo a sealed flask wears, breathing on its own element rather than on
  * the glass. The pulse was a shadow on the glass itself, which repainted a
- * 44px blur around every finished flask on every frame — a bench with four of
+ * 44px blur around every finished flask on every frame — a board with four of
  * them sealed cost 603ms of main thread in three idle seconds, and a late
- * bench seals eight. Opacity is the compositor's to animate, so this costs
+ * board seals eight. Opacity is the compositor's to animate, so this costs
  * nothing to breathe.
  *
  * It traces the body from the same radius the body is drawn from, so the
@@ -685,6 +694,119 @@ body::before {
   box-shadow: none;
 }
 
+/* ---------- The tool drawer ---------- */
+
+.menu-toggle {
+  position: fixed;
+  z-index: 11;
+  top: 50%;
+  right: clamp(0.6rem, 1.5vw, 1.1rem);
+  transform: translateY(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.65rem;
+  font-family: var(--ui);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--parchment-dim);
+  background: rgba(23, 14, 44, 0.72);
+  border: 1px solid rgba(185, 139, 255, 0.28);
+  border-radius: 0.9rem;
+  cursor: pointer;
+  transition:
+    color 0.2s var(--ease-out),
+    border-color 0.2s var(--ease-out);
+}
+
+.menu-toggle:hover,
+.menu-toggle:focus-visible {
+  color: var(--parchment);
+  border-color: var(--rune);
+}
+
+.menu-toggle:focus-visible {
+  outline: 2px solid var(--rune-bright);
+  outline-offset: 3px;
+}
+
+/* The burger itself: three bars drawn on the button, folding into a cross
+   while the drawer is open so the same glyph reads as "close". */
+.menu-toggle__bars,
+.menu-toggle__bars::before,
+.menu-toggle__bars::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  transition:
+    transform 0.2s var(--ease-out),
+    top 0.2s var(--ease-out),
+    opacity 0.2s;
+}
+
+.menu-toggle__bars {
+  position: relative;
+}
+
+.menu-toggle__bars::before,
+.menu-toggle__bars::after {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+
+.menu-toggle__bars::before {
+  top: -6px;
+}
+
+.menu-toggle__bars::after {
+  top: 6px;
+}
+
+.menu-toggle[aria-expanded='true'] .menu-toggle__bars {
+  transform: rotate(45deg);
+}
+
+.menu-toggle[aria-expanded='true'] .menu-toggle__bars::before {
+  top: 0;
+  transform: rotate(90deg);
+}
+
+.menu-toggle[aria-expanded='true'] .menu-toggle__bars::after {
+  top: 0;
+  opacity: 0;
+}
+
+.menu-panel {
+  position: fixed;
+  z-index: 11;
+  top: 50%;
+  right: clamp(3.4rem, 6vw, 4.5rem);
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(185, 139, 255, 0.28);
+  border-radius: 1.1rem;
+  background: rgba(23, 14, 44, 0.92);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* The price line lives in the drawer now, so it takes the drawer's width. */
+.restart__cost {
+  max-width: 13rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--parchment-dim);
+}
+
 /* ---------- Speed control ---------- */
 
 .speed-control {
@@ -753,15 +875,7 @@ body::before {
   gap: 0.6rem;
 }
 
-.restart__cost {
-  max-width: 26rem;
-  margin: 0;
-  text-align: center;
-  font-size: 0.74rem;
-  color: var(--parchment-dim);
-}
-
-/* A price the apprentice cannot pay is the end of their run, so the line that
+/* A price the player cannot pay is the end of their run, so the line that
    says so has to read as a warning rather than as small print. */
 .restart__cost[data-ends-the-run='true'] {
   color: #ffc2cd;
@@ -922,7 +1036,7 @@ body::before {
   display: block;
   width: 100%;
   height: 100%;
-  /* Grown from the left, so the bar reads as the atelier filling up. */
+  /* Grown from the left, so the bar reads as the campaign filling up. */
   transform-origin: left center;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--rune-bright), var(--gold));

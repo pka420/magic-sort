@@ -24,9 +24,7 @@ const PERFECT_RUN = [
   [4, 5]
 ]
 
-test('an apprentice sorts the starter level from first pour to last', async ({
-  page
-}) => {
+test('sorting the starter level from first pour to last', async ({ page }) => {
   // Relative, so it resolves against the base path rather than replacing it.
   await page.goto('./')
 
@@ -43,11 +41,11 @@ test('an apprentice sorts the starter level from first pour to last', async ({
   ).toBeVisible()
   await expect(page.getByLabel('Score')).toHaveText('1000 / 1000')
 
-  // The celebration covers the screen, so nothing from the bench may paint over
-  // it. Only a real browser resolves stacking order, so this is checked here by
-  // hit-testing a grid of points and asking what is actually on top.
+  // The celebration covers the screen, so nothing from the board may paint
+  // over it. Only a real browser resolves stacking order, so this is checked
+  // here by hit-testing a grid of points and asking what is actually on top.
   const celebration = page.getByRole('status')
-  const pointsCoveredByTheBench = await celebration.evaluate((banner) => {
+  const pointsCoveredByTheBoard = await celebration.evaluate((banner) => {
     const box = banner.getBoundingClientRect()
     const samples = []
     for (let column = 1; column <= 6; column++) {
@@ -63,16 +61,17 @@ test('an apprentice sorts the starter level from first pour to last', async ({
       return onTop === null || !banner.contains(onTop)
     }).length
   })
-  expect(pointsCoveredByTheBench).toBe(0)
+  expect(pointsCoveredByTheBoard).toBe(0)
 
   await page.getByRole('button', { name: 'Next level' }).click()
   await expect(page.getByText(/^Level 2 of/)).toHaveText('Level 2 of 50')
   await expect(page.getByLabel('Pours')).toHaveText('0')
-  // The bench resets; what it earned does not.
+  // The level resets; what it earned does not.
   await expect(page.getByLabel('Total')).toHaveText('1000 / 1275000')
 
-  // A restart costs a tenth of the bench being thrown away — 200 points on
+  // A restart costs a tenth of the level being thrown away — 200 points on
   // the second one.
+  await page.getByRole('button', { name: 'Menu' }).click()
   await page.getByRole('button', { name: 'Restart' }).click()
   await expect(page.getByLabel('Total')).toHaveText('800 / 1275000')
 })

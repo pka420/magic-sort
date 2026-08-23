@@ -8,7 +8,7 @@ import type { Board } from '../domain/board'
 import type { Elixir, Flask } from '../domain/flask'
 
 /**
- * The elixir falling out of a tipped flask, placed against the bench it falls
+ * The elixir falling out of a tipped flask, placed against the board it falls
  * onto rather than against the page.
  */
 export interface Stream {
@@ -21,7 +21,7 @@ export interface Stream {
 /*
  * The choreography, in the order a player watches it: the flask lifts out of
  * its place and swings over the mouth of the one it is filling, tips, and the
- * elixir falls. The bench changes at the moment the stream appears, so the
+ * elixir falls. The board changes at the moment the stream appears, so the
  * layers leave one flask and arrive in the other while the elixir is visibly
  * between them.
  */
@@ -33,7 +33,7 @@ const TILT_DEGREES = 104
 /**
  * How far the tipped flask clears the rim it is pouring into, in pixels. It is
  * measured from the flask's middle, which is what it turns about, so a flask
- * hangs over the bench with daylight under it rather than lying across the
+ * hangs over the board with daylight under it rather than lying across the
  * glass it is filling.
  *
  * A flask lying on its side reaches roughly half its own length below that
@@ -54,9 +54,9 @@ interface Flight {
 interface PourFlightProps {
   readonly board: Board
   readonly selectedIndex: number | null
-  /** The bench, which the stream is positioned against. */
-  readonly bench: RefObject<HTMLElement | null>
-  /** Each flask's place on the bench, which is what flies rather than the
+  /** The board of flasks, which the stream is positioned against. */
+  readonly flasksRef: RefObject<HTMLElement | null>
+  /** Each flask's place on the board, which is what flies rather than the
    *  flask itself: the flask is already animating its own selection. */
   readonly slots: RefObject<(HTMLElement | null)[]>
   /** Hands the tap on to the game once the elixir has somewhere to land. */
@@ -68,7 +68,7 @@ interface PourFlightProps {
 export function usePourFlight({
   board,
   selectedIndex,
-  bench,
+  flasksRef,
   slots,
   onTap,
   speed
@@ -81,7 +81,7 @@ export function usePourFlight({
       /*
        * A player chaining pours is never made to wait for the animation: a tap
        * arriving mid-flight lands the elixir at once and puts the flask back.
-       * The tap that interrupted is then read against the bench as it now
+       * The tap that interrupted is then read against the board as it now
        * stands, not against the one this render was drawn from.
        */
       if (inFlight.current !== null) {
@@ -106,7 +106,7 @@ export function usePourFlight({
       const filling = slots.current?.[index]
       const flight =
         flask && filling
-          ? flightBetween(bench.current, flask, filling, board[source])
+          ? flightBetween(flasksRef.current, flask, filling, board[source])
           : null
 
       if (!flask || !filling || flight === null) {
@@ -124,13 +124,13 @@ export function usePourFlight({
       )
       inFlight.current = pouring
 
-      // Nothing waits on the choreography: the tap is over, and the bench is
+      // Nothing waits on the choreography: the tap is over, and the board is
       // told about the pour from inside it.
       pouring.finished.then(() => {
         if (inFlight.current === pouring) inFlight.current = null
       })
     },
-    [board, selectedIndex, bench, slots, onTap, speed]
+    [board, selectedIndex, flasksRef, slots, onTap, speed]
   )
 
   return { tapFlask, stream }
@@ -138,7 +138,7 @@ export function usePourFlight({
 
 interface Pouring {
   readonly finished: Promise<void>
-  /** Lands the elixir now and puts the flask straight back on the bench. */
+  /** Lands the elixir now and puts the flask straight back on the board. */
   readonly cutShort: () => void
 }
 
@@ -154,7 +154,7 @@ function pourOver(
   let landed = false
   let cut = false
 
-  // The bench takes the pour exactly once, whether the elixir got there by
+  // The board takes the pour exactly once, whether the elixir got there by
   // falling or by the player cutting the fall short.
   const land = () => {
     if (landed) return
@@ -173,7 +173,7 @@ function pourOver(
     /*
      * Back through motion rather than by clearing the inline style: motion owns
      * the transform it wrote, and a flask whose style is wiped out from under
-     * it is left hanging over the bench where it was cut off.
+     * it is left hanging over the board where it was cut off.
      */
     animate(flask, { x: 0, y: 0, rotate: 0 }, { duration: 0 })
     settleBench()
@@ -181,14 +181,14 @@ function pourOver(
 
   const fall = async () => {
     // Above every other flask for as long as it is over one of them, and deaf
-    // to taps for just as long: a flask crossing the bench passes over the ones
+    // to taps for just as long: a flask crossing the board passes over the ones
     // the player is reaching for, and must not catch a tap meant for them.
     flask.style.zIndex = '5'
     flask.style.pointerEvents = 'none'
     /*
-     * The glass being filled rises too, above the bench but below the flask
+     * The glass being filled rises too, above the board but below the flask
      * pouring into it. That is what keeps the falling elixir in front of the
-     * flasks it crosses and still behind the one it lands in — on a bench that
+     * flasks it crosses and still behind the one it lands in — on a board that
      * has wrapped onto two rows, those can be different flasks.
      */
     filling.style.zIndex = '3'
@@ -236,19 +236,19 @@ function wait(seconds: number): Promise<void> {
 /**
  * Where the flask has to travel to hang over the mouth it is filling, or null
  * when there is nothing to watch: a player who asked for less motion, or a
- * bench that has not been laid out yet and has no positions to fly between.
+ * board that has not been laid out yet and has no positions to fly between.
  */
 function flightBetween(
-  bench: HTMLElement | null,
+  boardEl: HTMLElement | null,
   source: HTMLElement,
   target: HTMLElement,
   poured: Flask
 ): Flight | null {
   const elixir = topElixir(poured)
   if (prefersReducedMotion()) return null
-  if (bench === null || elixir === null) return null
+  if (boardEl === null || elixir === null) return null
 
-  const benchAt = bench.getBoundingClientRect()
+  const boardAt = boardEl.getBoundingClientRect()
   const from = source.getBoundingClientRect()
   const onto = target.getBoundingClientRect()
 
@@ -268,8 +268,8 @@ function flightBetween(
     // itself, so the stream starts where the flask actually is.
     stream: {
       elixir,
-      left: onto.left + onto.width / 2 - benchAt.left,
-      top: onto.top - benchAt.top - POURING_HEIGHT,
+      left: onto.left + onto.width / 2 - boardAt.left,
+      top: onto.top - boardAt.top - POURING_HEIGHT,
       height: onto.height * 0.6 + POURING_HEIGHT
     }
   }
