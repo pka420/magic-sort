@@ -32,9 +32,19 @@ export interface Game {
   readonly score: number
   readonly isSolved: boolean
   readonly lastTap: LastTap
+  /** Whether there is a pour on the board left to take back. */
+  readonly canUndo: boolean
   /** The one gesture the game understands: pick a flask up, or pour it out. */
   tapFlask: (index: number) => void
+  /** Takes back the last pour, and the pour it spent with it. */
+  undo: () => void
   restart: () => void
+}
+
+/** The board as it stood before the pour that can still be taken back. */
+interface Undoable {
+  readonly board: Board
+  readonly pours: number
 }
 
 interface Session {
@@ -44,6 +54,8 @@ interface Session {
   readonly selectedIndex: number | null
   readonly pours: number
   readonly lastTap: LastTap
+  /** One pour back, which is as far as changing your mind reaches. */
+  readonly previous: Undoable | null
 }
 
 /**
@@ -75,6 +87,10 @@ export function useGame(level: Level, worth: number): Game {
     setSession((current) => tap(current, index))
   }, [])
 
+  const undo = useCallback(() => {
+    setSession(takeBack)
+  }, [])
+
   const restart = useCallback(() => {
     setSession(sessionFor(level))
   }, [level])
@@ -96,7 +112,9 @@ export function useGame(level: Level, worth: number): Game {
     score,
     isSolved: solved,
     lastTap: session.lastTap,
+    canUndo: session.previous !== null,
     tapFlask,
+    undo,
     restart
   }
 }
@@ -111,6 +129,7 @@ function savedSession(level: Level): Session | null {
   if (saved === null || saved === undefined) return null
   if (saved.levelId !== level.id) return null
 
+  /* A board carried in from a save has no pour of this visit to take back. */
   return { ...sessionFor(level), board: saved.board, pours: saved.pours }
 }
 
@@ -125,7 +144,8 @@ function sessionFor(level: Level): Session {
       sequence: 0,
       completedFlaskIndex: null,
       refusedFlaskIndex: null
-    }
+    },
+    previous: null
   }
 }
 
@@ -172,11 +192,36 @@ function tap(session: Session, index: number): Session {
     board,
     selectedIndex: null,
     pours: session.pours + 1,
+    /* The pour that made this board is the one an undo reaches back to. */
+    previous: { board: session.board, pours: session.pours },
     lastTap: {
       ...quietTap,
       outcome: 'poured',
       // Only the flask receiving the pour can have just been filled.
       completedFlaskIndex: isComplete(board[index]) ? index : null
+    }
+  }
+}
+
+/**
+ * The last pour, taken back. The score needs no refund of its own: it is
+ * counted from the board and the pours, so it climbs back on its own. The tap
+ * is reported as ignored rather than poured, so nothing plays it backwards.
+ */
+function takeBack(session: Session): Session {
+  if (session.previous === null) return session
+
+  return {
+    ...session,
+    board: session.previous.board,
+    pours: session.previous.pours,
+    selectedIndex: null,
+    previous: null,
+    lastTap: {
+      outcome: 'ignored',
+      sequence: session.lastTap.sequence + 1,
+      completedFlaskIndex: null,
+      refusedFlaskIndex: null
     }
   }
 }

@@ -895,6 +895,81 @@ body::before {
 
 /* ---------- Taking something back ---------- */
 
+/* The board carries its own positioning context, so the undo curl can hang
+   just off its left edge however wide the board happens to be. */
+.board {
+  position: relative;
+}
+
+/*
+ * The undo curl hangs just left of the board, level with its middle: close
+ * enough for a slipped finger to reach, dimmed until there is a pour to
+ * take back.
+ */
+.undo {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: 100%;
+  margin-right: clamp(0.75rem, 2.5vw, 1.75rem);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: var(--parchment-dim);
+  background: rgba(23, 14, 44, 0.72);
+  border: 1px solid rgba(185, 139, 255, 0.28);
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    color 0.2s var(--ease-out),
+    border-color 0.2s var(--ease-out);
+}
+
+/* A board wrapped onto rows fills a narrow screen edge to edge: there is no
+   "left of the board" left to hang from, so the curl sits just above the
+   board's left corner instead. */
+@media (max-width: 34rem) {
+  .undo {
+    top: auto;
+    right: auto;
+    bottom: calc(100% + 0.75rem);
+    left: 0;
+    margin-right: 0;
+    transform: none;
+  }
+}
+
+.undo:hover,
+.undo:focus-visible {
+  color: var(--parchment);
+  border-color: var(--rune);
+}
+
+.undo:focus-visible {
+  outline: 2px solid var(--rune-bright);
+  outline-offset: 3px;
+}
+
+.undo:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.undo:disabled:hover {
+  color: var(--parchment-dim);
+  border-color: rgba(185, 139, 255, 0.28);
+}
+
+.undo svg {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
 .restart {
   display: flex;
   flex-direction: column;

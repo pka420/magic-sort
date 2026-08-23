@@ -5,6 +5,7 @@ import { GameOver } from './GameOver'
 import { Menu } from './Menu'
 import { Restart } from './Restart'
 import { SpeedSlider } from './SpeedSlider'
+import { Undo } from './Undo'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
@@ -147,52 +148,58 @@ export function Game({
         />
       </div>
 
-      <ol className='bench' aria-label='Flasks' ref={flasksRef}>
-        {game.board.map((flask, index) => (
-          <li
-            key={index}
-            className='bench__slot'
-            ref={(slot) => {
-              slots.current[index] = slot
-            }}
-          >
-            <Flask
-              position={index + 1}
-              contents={flask.contents}
-              capacity={flask.capacity}
-              isSelected={game.selectedIndex === index}
-              refusedAt={
-                game.lastTap.refusedFlaskIndex === index
-                  ? game.lastTap.sequence
-                  : null
-              }
-              onTap={() => pour.tapFlask(index)}
-              speed={speed}
-            />
-          </li>
-        ))}
+      <div className='board'>
+        {/* Hanging just off the board's left edge: taking back a slip of
+            the finger is part of playing, not a tool put away in a drawer. */}
+        <Undo canUndo={game.canUndo} onUndo={game.undo} />
 
-        {/* The elixir in the air, drawn between the tipped flask and the one
+        <ol className='bench' aria-label='Flasks' ref={flasksRef}>
+          {game.board.map((flask, index) => (
+            <li
+              key={index}
+              className='bench__slot'
+              ref={(slot) => {
+                slots.current[index] = slot
+              }}
+            >
+              <Flask
+                position={index + 1}
+                contents={flask.contents}
+                capacity={flask.capacity}
+                isSelected={game.selectedIndex === index}
+                refusedAt={
+                  game.lastTap.refusedFlaskIndex === index
+                    ? game.lastTap.sequence
+                    : null
+                }
+                onTap={() => pour.tapFlask(index)}
+                speed={speed}
+              />
+            </li>
+          ))}
+
+          {/* The elixir in the air, drawn between the tipped flask and the one
             filling: it belongs to the board rather than to either flask. */}
-        {pour.stream !== null && (
-          <motion.span
-            className='pour-stream'
-            aria-hidden='true'
-            data-elixir={pour.stream.elixir}
-            style={
-              {
-                left: pour.stream.left,
-                top: pour.stream.top,
-                height: pour.stream.height
-              } as CSSProperties
-            }
-            initial={{ scaleY: 0, opacity: 1 }}
-            animate={{ scaleY: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 / speed, ease: 'easeIn' }}
-          />
-        )}
-      </ol>
+          {pour.stream !== null && (
+            <motion.span
+              className='pour-stream'
+              aria-hidden='true'
+              data-elixir={pour.stream.elixir}
+              style={
+                {
+                  left: pour.stream.left,
+                  top: pour.stream.top,
+                  height: pour.stream.height
+                } as CSSProperties
+              }
+              initial={{ scaleY: 0, opacity: 1 }}
+              animate={{ scaleY: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 / speed, ease: 'easeIn' }}
+            />
+          )}
+        </ol>
+      </div>
 
       <Menu>
         <SpeedSlider speed={speed} onSpeedChange={setSpeed} />

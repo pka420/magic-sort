@@ -280,4 +280,101 @@ describe('useGame', () => {
 
     expect(result.current).toMatchObject({ board: mixed.board, pours: 0 })
   })
+
+  it('takes back the last pour, and the pour it spent with it', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.undo())
+
+    expect(result.current).toMatchObject({ board: mixed.board, pours: 0 })
+  })
+
+  /* Changing your mind is free: the score is counted off the board and the
+     pours, so it climbs back to where it stood without a charge for it. */
+  it('hands back the score the pour had spent', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+    const before = result.current.score
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.undo())
+
+    expect(result.current.score).toBe(before)
+  })
+
+  it('reaches only one pour back', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(3))
+    act(() => result.current.undo())
+
+    // The first pour still stands: only the second was taken back.
+    expect(result.current).toMatchObject({
+      board: boardOfGlass(4, ['crimson'], ['azure', 'azure'], ['verdant'], []),
+      pours: 1,
+      canUndo: false
+    })
+  })
+
+  it('has nothing to take back before the first pour lands', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+
+    expect(result.current.canUndo).toBe(false)
+    act(() => result.current.undo())
+
+    expect(result.current).toMatchObject({ board: mixed.board, pours: 0 })
+  })
+
+  it('keeps the pour undoable through a pick-up that comes to nothing', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.tapFlask(2))
+    act(() => result.current.tapFlask(2))
+    act(() => result.current.undo())
+
+    expect(result.current).toMatchObject({ board: mixed.board, pours: 0 })
+  })
+
+  /* An undo is not a pour played in reverse: the tap is reported as ignored,
+     so no sound plays and no flask rebuffs the player for it. */
+  it('plays no sound backwards when a pour is taken back', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.undo())
+
+    expect(result.current.lastTap).toMatchObject({ outcome: 'ignored' })
+  })
+
+  it('forgets the pour once the level is restarted', () => {
+    const { result } = renderHook(() => useGame(mixed, worth))
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.restart())
+
+    expect(result.current.canUndo).toBe(false)
+  })
+
+  /* A board carried in from a save belongs to another visit: the pours it
+     holds were spent then, and this visit has none of them to take back. */
+  it('offers nothing to take back on a board handed back from a save', () => {
+    lendStorage()
+    const { result, unmount } = renderHook(() => useGame(mixed, worth))
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    unmount()
+
+    const { result: onReturn } = renderHook(() => useGame(mixed, worth))
+
+    expect(onReturn.current.canUndo).toBe(false)
+  })
 })

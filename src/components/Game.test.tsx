@@ -436,7 +436,7 @@ describe('Game', () => {
    * The speed and the restart are tools for a moment, not for the whole sitting:
    * they live behind the burger on the edge so the board keeps the screen.
    */
-  it('keeps the speed and the restart tucked behind the menu until asked for', () => {
+  it('keeps the tools tucked behind the menu until asked for', () => {
     showLevel(level)
 
     expect(screen.getByRole('button', { name: 'Menu' })).toHaveAttribute(
@@ -520,6 +520,34 @@ describe('Game', () => {
     await waitFor(() =>
       expect(screen.queryByLabelText('Animation speed')).not.toBeInTheDocument()
     )
+  })
+
+  /* Changing your mind is free here: the undo stands beside the board and
+     hands back the pour it was asked to take back, and the pour count — and
+     with it the score — climbs back to where it stood. */
+  it('takes the last pour back when the undo asks it to', async () => {
+    const user = userEvent.setup()
+    showLevel(level)
+
+    await pourFrom(user, 2, 1)
+    expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
+
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+
+    await waitFor(() =>
+      expect(screen.getByLabelText('Pours')).toHaveTextContent('0')
+    )
+  })
+
+  it('offers the undo only once there is a pour to take back', async () => {
+    const user = userEvent.setup()
+    showLevel(level)
+
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled()
+
+    await pourFrom(user, 2, 1)
+
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeEnabled()
   })
 
   /*
