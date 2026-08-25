@@ -1,0 +1,27 @@
+# systemd unit for the Magic Sort API (uvicorn + FastAPI + SQLite).
+#
+#   sudo cp infra/magic-sort-api.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now magic-sort-api
+#   sudo systemctl status magic-sort-api
+#
+# Assumes the repo is checked out at /srv/magic-sort with a venv in
+# backend/.venv and a backend/.env holding DATABASE_URL and SECRET_KEY.
+# A single worker: SQLite is one file, and more workers would only contend
+# over writes.
+
+[Unit]
+Description=Magic Sort API (uvicorn)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/magic-sort/backend
+EnvironmentFile=/srv/magic-sort/backend/.env
+ExecStart=/srv/magic-sort/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

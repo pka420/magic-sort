@@ -31,3 +31,12 @@ test-results
 # Personal mise overrides; the shared toolchain lives in mise.toml
 mise.local.toml
 .mise.local.toml
+
+# Python backend (ESLint's ignore resolution reads this file, not the nested one)
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.env
+backend/__pycache__/
+backend/.pytest_cache/
+*.pyc

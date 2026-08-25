@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest'
  * which every unfurler quietly ignores, and advertising a card that was never
  * shipped. Both look perfect in a browser.
  */
-const PAGE_URL = 'https://pka420.github.io/magic-sort/'
+const PAGE_URL = 'https://magic-sort.from-delhi.net/'
 const CARD = 'social-card.jpg'
 
 // Vitest runs from the project root, which is where the page and its assets sit.

@@ -88,6 +88,18 @@ interface Standing {
   readonly onBeginAgain?: () => void
 }
 
+/* The account corner is a prop of the game, not a thing under test here. */
+const signedOut = {
+  user: null,
+  token: null,
+  resolving: false,
+  login: vi.fn(),
+  register: vi.fn(),
+  signInWithGoogle: vi.fn(),
+  chooseUsername: vi.fn(),
+  signOut: vi.fn()
+}
+
 const showLevel = (level: Level, standing: Standing = {}) =>
   render(
     <Game
@@ -98,6 +110,7 @@ const showLevel = (level: Level, standing: Standing = {}) =>
       bankedScore={standing.bankedScore ?? 0}
       perfectTotal={standing.perfectTotal ?? 5000}
       forfeited={standing.forfeited ?? 0}
+      auth={signedOut}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
       onBeginAgain={standing.onBeginAgain ?? (() => {})}

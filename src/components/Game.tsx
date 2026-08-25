@@ -6,16 +6,20 @@ import { Menu } from './Menu'
 import { Restart } from './Restart'
 import { SpeedSlider } from './SpeedSlider'
 import { Undo } from './Undo'
+import { Account } from './Account'
+import { Leaderboard } from './Leaderboard'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { usePourFlight } from '../hooks/usePourFlight'
+import { useLeaderboard } from '../hooks/useLeaderboard'
 import { celebrateLevel } from '../effects/confetti'
 import { endOfRun } from '../domain/runsEnd'
 import { canPayForRestart, priceOfRestart, totalScore } from '../domain/scoring'
 import type { CSSProperties } from 'react'
 import type { Level } from '../domain/levels'
 import type { RunsEnd } from '../domain/runsEnd'
+import type { Auth } from '../hooks/useAuth'
 
 interface GameProps {
   readonly level: Level
@@ -30,6 +34,8 @@ interface GameProps {
   readonly perfectTotal: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
+  /** Who is signed in, and the ways to become so. Null while unchecked. */
+  readonly auth: Auth
   /**
    * Hands over the next level, taking what this one scored so the campaign can
    * bank it. Null when this is the last level.
@@ -49,12 +55,15 @@ export function Game({
   bankedScore,
   perfectTotal,
   forfeited,
+  auth,
   onNextLevel,
   onRestart,
   onBeginAgain
 }: GameProps) {
   const game = useGame(level, worth)
   useGameSounds(game)
+  const board = useLeaderboard(auth)
+  const { submit } = board
   const sortedId = useId()
   const [speed, setSpeed] = useState(1)
 
@@ -84,6 +93,16 @@ export function Game({
   const isLastLevel = onNextLevel === null
   const restartPrice = priceOfRestart(position)
   const canRestart = canPayForRestart({ banked: bankedScore, position })
+
+  /*
+   * A solved campaign is a total worth posting. The board keeps the best it
+   * has seen, so posting again on a replay is a no-op, and while signed out
+   * the post is silently skipped.
+   */
+  useEffect(() => {
+    if (!isLastLevel || !game.isSolved) return
+    submit(total)
+  }, [isLastLevel, game.isSolved, total, submit])
 
   /*
    * The ending nobody pressed for is asked after on every render rather than
@@ -201,6 +220,12 @@ export function Game({
         </ol>
       </div>
 
+      <Leaderboard
+        board={board}
+        username={auth.user?.username ?? null}
+        isVerified={auth.user?.isVerified ?? false}
+      />
+
       <Menu>
         <SpeedSlider speed={speed} onSpeedChange={setSpeed} />
         <Restart
@@ -209,6 +234,7 @@ export function Game({
           forfeited={forfeited}
           wouldEndTheRun={!canRestart}
         />
+        <Account auth={auth} />
       </Menu>
 
       <AnimatePresence>

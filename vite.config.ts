@@ -4,11 +4,21 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // The game is served from a path, never from the root of a domain: GitHub
-  // Pages publishes it under the repository name. Asset URLs have to carry that
-  // prefix or the browser looks for them at the domain root and finds nothing.
-  base: '/magic-sort/',
+  // The game is served from the root of its own domain by nginx, so assets
+  // live at the root too: no prefix to carry.
+  base: '/',
   plugins: [react()],
+  server: {
+    // The API is served under /api in production; in dev, forward that path to
+    // the FastAPI backend running locally so the game never sees a cross-origin
+    // request.
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',

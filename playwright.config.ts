@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// The game is deployed under a subpath, so the preview server serves it from
-// one too: the e2e test proves the deployed shape, not a friendlier local one.
-const PREVIEW_URL = 'http://localhost:4173/magic-sort/'
+// The game is deployed at a domain root, so the preview server serves it from
+// its root too: the e2e test proves the deployed shape, not a friendlier one.
+const PREVIEW_URL = 'http://localhost:4173/'
 
 export default defineConfig({
   testDir: './e2e',
