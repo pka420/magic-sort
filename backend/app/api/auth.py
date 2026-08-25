@@ -126,6 +126,24 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     return Message(message="Email verified")
 
 
+@router.post("/resend-verification", response_model=Message)
+def resend_verification(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Sends the confirmation email again, for a player who lost the first one."""
+    if user.is_verified:
+        return Message(message="Email already verified")
+
+    if not user.email:
+        raise HTTPException(status_code=400, detail="No email address on this account")
+
+    user.email_token = secrets.token_urlsafe(32)
+    db.commit()
+    send_email(user.email, user.email_token, purpose="verify")
+    return Message(message="Verification email sent")
+
+
 @router.post("/forgot-password", response_model=Message)
 def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == request.email))

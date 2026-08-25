@@ -8,14 +8,13 @@ this is the only process with a database.
 ## Requirements
 
 - Python 3.12+
-- [uv](https://docs.astral.sh/uv/)
 
 ## Setup
 
 ```bash
 cd backend
-uv venv .venv
-uv pip install -r requirements.txt
+python3 -m venv env
+env/bin/pip install -r requirements.txt
 cp .env.example .env
 ```
 
@@ -31,7 +30,7 @@ directory relative to where uvicorn is started, so run it from here.
 ## Run
 
 ```bash
-uv run uvicorn app.main:app --reload
+env/bin/uvicorn app.main:app --reload
 ```
 
 - API: <http://127.0.0.1:8000>
@@ -62,5 +61,5 @@ that is needed to play against it locally.
 ## Tests
 
 ```bash
-uv run pytest
+env/bin/pytest
 ```

@@ -22,6 +22,10 @@ function makeAuth(overrides: Partial<Auth> = {}): Auth {
     register: vi.fn(),
     signInWithGoogle: vi.fn(),
     chooseUsername: vi.fn(),
+    verifyEmail: vi.fn(),
+    resendVerification: vi.fn(),
+    forgotPassword: vi.fn(),
+    resetPassword: vi.fn(),
     signOut: vi.fn(),
     ...overrides
   }
@@ -83,6 +87,49 @@ describe('Account', () => {
     expect(
       screen.getByText('Verify your email to appear on the leaderboard.')
     ).toBeInTheDocument()
+  })
+
+  it('resends the verification email from the account', async () => {
+    const auth = makeAuth({ user: alice })
+    const user = userEvent.setup()
+    render(<Account auth={auth} />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Resend verification email' })
+    )
+
+    expect(auth.resendVerification).toHaveBeenCalledTimes(1)
+  })
+
+  it('says where the verification email went', async () => {
+    const auth = makeAuth({
+      user: alice,
+      resendVerification: vi.fn().mockResolvedValue(undefined)
+    })
+    const user = userEvent.setup()
+    render(<Account auth={auth} />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Resend verification email' })
+    )
+
+    expect(
+      await screen.findByText('Sent to alice@example.com.')
+    ).toBeInTheDocument()
+  })
+
+  it('asks for an email to reset a forgotten password', async () => {
+    const auth = makeAuth()
+    const user = userEvent.setup()
+    render(<Account auth={auth} />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Forgot your password?' })
+    )
+    await user.type(screen.getByLabelText('Email'), 'alice@example.com')
+    await user.click(screen.getByRole('button', { name: 'Send reset link' }))
+
+    expect(auth.forgotPassword).toHaveBeenCalledWith('alice@example.com')
   })
 
   it('asks a Google sign-in to choose a name', async () => {

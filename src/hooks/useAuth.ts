@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   fetchMe,
+  forgotPassword as apiForgotPassword,
   googleAuthorizeUrl,
   login as apiLogin,
   register as apiRegister,
+  resendVerification as apiResendVerification,
+  resetPassword as apiResetPassword,
   setUsername as apiSetUsername,
+  verifyEmail as apiVerifyEmail,
   type AuthUser
 } from '../api/auth'
 
@@ -22,6 +26,10 @@ export interface Auth {
   register: (username: string, email: string, password: string) => Promise<void>
   signInWithGoogle: () => void
   chooseUsername: (username: string) => Promise<void>
+  verifyEmail: (token: string) => Promise<void>
+  resendVerification: () => Promise<void>
+  forgotPassword: (email: string) => Promise<void>
+  resetPassword: (token: string, newPassword: string) => Promise<void>
   signOut: () => void
 }
 
@@ -92,6 +100,34 @@ export function useAuth(): Auth {
     [token]
   )
 
+  /* A verification link is followed in whatever browser the player opened
+   * their mail in, so the confirmed flag is refreshed only when they are
+   * actually signed in here. */
+  const verifyEmail = useCallback(
+    async (verificationToken: string) => {
+      await apiVerifyEmail(verificationToken)
+      if (token === null) return
+      setUser(await fetchMe(token))
+    },
+    [token]
+  )
+
+  const resendVerification = useCallback(async () => {
+    if (token === null) return
+    await apiResendVerification(token)
+  }, [token])
+
+  const forgotPassword = useCallback(async (email: string) => {
+    await apiForgotPassword(email)
+  }, [])
+
+  const resetPassword = useCallback(
+    async (resetToken: string, newPassword: string) => {
+      await apiResetPassword(resetToken, newPassword)
+    },
+    []
+  )
+
   const signOut = useCallback(() => {
     forgetToken()
     setToken(null)
@@ -106,6 +142,10 @@ export function useAuth(): Auth {
     register,
     signInWithGoogle,
     chooseUsername,
+    verifyEmail,
+    resendVerification,
+    forgotPassword,
+    resetPassword,
     signOut
   }
 }

@@ -8,6 +8,7 @@ import { SpeedSlider } from './SpeedSlider'
 import { Undo } from './Undo'
 import { Account } from './Account'
 import { Leaderboard } from './Leaderboard'
+import { Verification } from './Verification'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
@@ -327,6 +328,10 @@ export function Game({
           <GameOver ending={ending} onBeginAgain={beginANewRun} />
         )}
       </AnimatePresence>
+
+      {/* A "verify" or "reset" email link opens here, over whatever the game
+          was doing, so it cannot be missed behind the drawer. */}
+      <Verification auth={auth} />
     </main>
   )
 }

@@ -67,6 +67,38 @@ export async function setUsername(
   )
 }
 
+/** Confirms the address behind a verification link in a "verify" email. */
+export function verifyEmail(token: string): Promise<void> {
+  return request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
+}
+
+/** Asks for the confirmation email to be sent again. */
+export function resendVerification(token: string): Promise<void> {
+  return request('/auth/resend-verification', {
+    ...authed(token),
+    method: 'POST'
+  })
+}
+
+/** Begins the reset round trip for a forgotten password. */
+export function forgotPassword(email: string): Promise<void> {
+  return request('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email })
+  })
+}
+
+/** Sets a new password from a link in a "reset" email. */
+export function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void> {
+  return request('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password: newPassword })
+  })
+}
+
 /** Where the browser is sent to begin a "Sign in with Google" round trip. */
 export function googleAuthorizeUrl(): string {
   return '/api/auth/google/authorize'

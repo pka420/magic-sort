@@ -85,6 +85,47 @@ def test_verify_email_rejects_unknown_token(client):
     assert response.status_code == 400
 
 
+def test_resend_verification_mails_a_fresh_token(client, monkeypatch):
+    register(client)
+    token = login(client).json()["access_token"]
+    original = user_by_email("alice@example.com").email_token
+
+    sent = []
+    monkeypatch.setattr(auth_module, "send_email", lambda to, tok, purpose: sent.append((to, tok, purpose)))
+
+    response = client.post(
+        "/api/auth/resend-verification",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+
+    refreshed = user_by_email("alice@example.com")
+    assert refreshed.email_token != original
+    assert sent == [("alice@example.com", refreshed.email_token, "verify")]
+
+
+def test_resend_verification_requires_a_token(client):
+    register(client)
+    response = client.post("/api/auth/resend-verification")
+    assert response.status_code == 401
+
+
+def test_resend_verification_says_when_already_verified(client):
+    register(client)
+    token = login(client).json()["access_token"]
+    client.get(
+        "/api/auth/verify-email",
+        params={"token": user_by_email("alice@example.com").email_token},
+    )
+
+    response = client.post(
+        "/api/auth/resend-verification",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["message"] == "Email already verified"
+
+
 def test_me_requires_a_token(client):
     assert client.get("/api/auth/me").status_code == 401
 

@@ -3,9 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAuth } from './useAuth'
 import {
   fetchMe,
+  forgotPassword as apiForgotPassword,
   login as apiLogin,
   register as apiRegister,
-  setUsername as apiSetUsername
+  resendVerification as apiResendVerification,
+  resetPassword as apiResetPassword,
+  setUsername as apiSetUsername,
+  verifyEmail as apiVerifyEmail
 } from '../api/auth'
 import { lendStorage } from '../test/storage'
 
@@ -14,6 +18,10 @@ vi.mock('../api/auth', () => ({
   login: vi.fn(),
   register: vi.fn(),
   setUsername: vi.fn(),
+  verifyEmail: vi.fn(),
+  resendVerification: vi.fn(),
+  forgotPassword: vi.fn(),
+  resetPassword: vi.fn(),
   googleAuthorizeUrl: () => '/api/auth/google/authorize'
 }))
 
@@ -33,6 +41,10 @@ beforeEach(() => {
   vi.mocked(apiLogin).mockReset()
   vi.mocked(apiRegister).mockReset()
   vi.mocked(apiSetUsername).mockReset()
+  vi.mocked(apiVerifyEmail).mockReset()
+  vi.mocked(apiResendVerification).mockReset()
+  vi.mocked(apiForgotPassword).mockReset()
+  vi.mocked(apiResetPassword).mockReset()
 })
 
 afterEach(() => {
@@ -135,5 +147,74 @@ describe('useAuth', () => {
 
     expect(result.current.user).toBeNull()
     expect(window.localStorage.getItem(TOKEN_KEY)).toBeNull()
+  })
+
+  it('verifies an email and refreshes a signed-in player', async () => {
+    window.localStorage.setItem(TOKEN_KEY, 'tok')
+    vi.mocked(fetchMe).mockResolvedValue(alice)
+    vi.mocked(apiVerifyEmail).mockResolvedValue(undefined)
+    const verified = { ...alice, isVerified: true }
+    vi.mocked(fetchMe)
+      .mockResolvedValueOnce(alice)
+      .mockResolvedValueOnce(verified)
+
+    const { result } = renderHook(() => useAuth())
+    await waitFor(() => expect(result.current.user).toEqual(alice))
+
+    await act(() => result.current.verifyEmail('email-token'))
+
+    expect(vi.mocked(apiVerifyEmail)).toHaveBeenCalledWith('email-token')
+    expect(result.current.user?.isVerified).toBe(true)
+  })
+
+  it('verifies an email without a signed-in player', async () => {
+    vi.mocked(apiVerifyEmail).mockResolvedValue(undefined)
+
+    const { result } = renderHook(() => useAuth())
+
+    await act(() => result.current.verifyEmail('email-token'))
+
+    expect(vi.mocked(apiVerifyEmail)).toHaveBeenCalledWith('email-token')
+    expect(result.current.user).toBeNull()
+  })
+
+  it('resends the verification email with the stored token', async () => {
+    window.localStorage.setItem(TOKEN_KEY, 'tok')
+    vi.mocked(fetchMe).mockResolvedValue(alice)
+    vi.mocked(apiResendVerification).mockResolvedValue(undefined)
+
+    const { result } = renderHook(() => useAuth())
+    await waitFor(() => expect(result.current.user).toEqual(alice))
+
+    await act(() => result.current.resendVerification())
+
+    expect(vi.mocked(apiResendVerification)).toHaveBeenCalledWith('tok')
+  })
+
+  it('asks for a password reset link', async () => {
+    vi.mocked(apiForgotPassword).mockResolvedValue(undefined)
+
+    const { result } = renderHook(() => useAuth())
+
+    await act(() => result.current.forgotPassword('alice@example.com'))
+
+    expect(vi.mocked(apiForgotPassword)).toHaveBeenCalledWith(
+      'alice@example.com'
+    )
+  })
+
+  it('resets a password from a reset link', async () => {
+    vi.mocked(apiResetPassword).mockResolvedValue(undefined)
+
+    const { result } = renderHook(() => useAuth())
+
+    await act(() =>
+      result.current.resetPassword('reset-token', 'new-password-1')
+    )
+
+    expect(vi.mocked(apiResetPassword)).toHaveBeenCalledWith(
+      'reset-token',
+      'new-password-1'
+    )
   })
 })

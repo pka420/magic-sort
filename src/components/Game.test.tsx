@@ -97,6 +97,10 @@ const signedOut = {
   register: vi.fn(),
   signInWithGoogle: vi.fn(),
   chooseUsername: vi.fn(),
+  verifyEmail: vi.fn(),
+  resendVerification: vi.fn(),
+  forgotPassword: vi.fn(),
+  resetPassword: vi.fn(),
   signOut: vi.fn()
 }
 

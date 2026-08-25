@@ -1,5 +1,17 @@
+from email import message_from_string
+
 from app.api import email_utils
 from app.config import settings
+
+
+def decoded_parts(message: str) -> str:
+    """The readable text of every part of a sent message, joined together."""
+    parsed = message_from_string(message)
+    return "\n".join(
+        part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8")
+        for part in parsed.walk()
+        if not part.is_multipart()
+    )
 
 
 class FakeSMTP:
@@ -66,6 +78,41 @@ def test_email_sends_over_starttls_on_port_587(monkeypatch):
     assert fake.did_starttls is True
     assert fake.logged_in is None
     assert len(fake.sent) == 1
+
+
+def test_email_carries_plain_and_html_parts_with_the_link(monkeypatch):
+    monkeypatch.setattr(settings, "email_enabled", True)
+    monkeypatch.setattr(settings, "smtp_port", 465)
+    monkeypatch.setattr(settings, "frontend_url", "http://localhost:5173")
+
+    fake = FakeSMTP()
+    monkeypatch.setattr(email_utils.smtplib, "SMTP_SSL", lambda *a, **k: fake)
+
+    email_utils.send_email("alice@example.com", "tok", "verify")
+
+    message = fake.sent[0][2]
+    assert "multipart/alternative" in message
+    assert "text/plain" in message
+    assert "text/html" in message
+
+    readable = decoded_parts(message)
+    assert "http://localhost:5173?verify=tok" in readable
+    assert "Verify my email" in readable
+
+
+def test_reset_email_points_at_the_reset_link(monkeypatch):
+    monkeypatch.setattr(settings, "email_enabled", True)
+    monkeypatch.setattr(settings, "smtp_port", 465)
+    monkeypatch.setattr(settings, "frontend_url", "http://localhost:5173")
+
+    fake = FakeSMTP()
+    monkeypatch.setattr(email_utils.smtplib, "SMTP_SSL", lambda *a, **k: fake)
+
+    email_utils.send_email("alice@example.com", "tok", "reset")
+
+    readable = decoded_parts(fake.sent[0][2])
+    assert "http://localhost:5173?reset=tok" in readable
+    assert "Reset my password" in readable
 
 
 def test_email_failure_is_logged_not_raised(monkeypatch, capsys):

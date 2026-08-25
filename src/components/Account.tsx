@@ -23,7 +23,7 @@ export function Account({ auth }: AccountProps) {
   return <SignedIn auth={auth} user={auth.user} />
 }
 
-type Mode = 'signin' | 'register'
+type Mode = 'signin' | 'register' | 'forgot'
 
 function SignedOut({ auth }: { auth: Auth }) {
   const [mode, setMode] = useState<Mode>('signin')
@@ -42,8 +42,14 @@ function SignedOut({ auth }: { auth: Auth }) {
     try {
       if (mode === 'register') {
         await auth.register(username, email, password)
-        setNotice('Account created. Sign in to continue.')
+        setNotice(
+          'Account created. Check your email to verify it, then sign in.'
+        )
         setPassword('')
+        setMode('signin')
+      } else if (mode === 'forgot') {
+        await auth.forgotPassword(email)
+        setNotice('If that email exists, a reset link has been sent.')
         setMode('signin')
       } else {
         await auth.login(email, password)
@@ -55,16 +61,24 @@ function SignedOut({ auth }: { auth: Auth }) {
     }
   }
 
-  const switchMode = () => {
-    setMode(mode === 'register' ? 'signin' : 'register')
+  const goTo = (next: Mode) => {
+    setMode(next)
     setNotice(null)
     setError(null)
+  }
+
+  const switchMode = () => {
+    goTo(mode === 'register' ? 'signin' : 'register')
   }
 
   return (
     <form className='account' onSubmit={submit}>
       <h2 className='account__title'>
-        {mode === 'register' ? 'Make an account' : 'Sign in'}
+        {mode === 'register'
+          ? 'Make an account'
+          : mode === 'forgot'
+            ? 'Reset your password'
+            : 'Sign in'}
       </h2>
 
       {mode === 'register' && (
@@ -94,20 +108,22 @@ function SignedOut({ auth }: { auth: Auth }) {
         />
       </label>
 
-      <label className='account__field'>
-        Password
-        <input
-          type='password'
-          name='password'
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete={
-            mode === 'register' ? 'new-password' : 'current-password'
-          }
-          minLength={8}
-          required
-        />
-      </label>
+      {mode !== 'forgot' && (
+        <label className='account__field'>
+          Password
+          <input
+            type='password'
+            name='password'
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete={
+              mode === 'register' ? 'new-password' : 'current-password'
+            }
+            minLength={8}
+            required
+          />
+        </label>
+      )}
 
       {notice !== null && <p className='account__note'>{notice}</p>}
       {error !== null && (
@@ -125,18 +141,40 @@ function SignedOut({ auth }: { auth: Auth }) {
           ? 'Please wait…'
           : mode === 'register'
             ? 'Create account'
-            : 'Sign in'}
+            : mode === 'forgot'
+              ? 'Send reset link'
+              : 'Sign in'}
       </button>
 
-      <button
-        type='button'
-        className='button button--quiet'
-        onClick={switchMode}
-      >
-        {mode === 'register'
-          ? 'Already have an account?'
-          : 'New here? Make an account'}
-      </button>
+      {mode === 'forgot' ? (
+        <button
+          type='button'
+          className='button button--quiet'
+          onClick={() => goTo('signin')}
+        >
+          Back to sign in
+        </button>
+      ) : (
+        <>
+          <button
+            type='button'
+            className='button button--quiet'
+            onClick={switchMode}
+          >
+            {mode === 'register'
+              ? 'Already have an account?'
+              : 'New here? Make an account'}
+          </button>
+
+          <button
+            type='button'
+            className='button button--quiet'
+            onClick={() => goTo('forgot')}
+          >
+            Forgot your password?
+          </button>
+        </>
+      )}
 
       <button type='button' className='button' onClick={auth.signInWithGoogle}>
         Sign in with Google
@@ -152,11 +190,7 @@ function SignedIn({ auth, user }: { auth: Auth; user: AuthUser }) {
     <div className='account'>
       <h2 className='account__title'>Signed in as {user.username}</h2>
 
-      {!user.isVerified && (
-        <p className='account__note'>
-          Verify your email to appear on the leaderboard.
-        </p>
-      )}
+      {!user.isVerified && <Unverified auth={auth} email={user.email} />}
 
       <button
         type='button'
@@ -166,6 +200,52 @@ function SignedIn({ auth, user }: { auth: Auth; user: AuthUser }) {
         Sign out
       </button>
     </div>
+  )
+}
+
+function Unverified({ auth, email }: { auth: Auth; email: string | null }) {
+  const [notice, setNotice] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const resend = async () => {
+    setNotice(null)
+    setError(null)
+    setBusy(true)
+    try {
+      await auth.resendVerification()
+      setNotice(
+        email === null ? 'Verification email sent.' : `Sent to ${email}.`
+      )
+    } catch (cause) {
+      setError(messageOf(cause))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <p className='account__note'>
+        Verify your email to appear on the leaderboard.
+      </p>
+
+      {notice !== null && <p className='account__note'>{notice}</p>}
+      {error !== null && (
+        <p className='account__error' role='alert'>
+          {error}
+        </p>
+      )}
+
+      <button
+        type='button'
+        className='button button--quiet'
+        disabled={busy}
+        onClick={resend}
+      >
+        {busy ? 'Sending…' : 'Resend verification email'}
+      </button>
+    </>
   )
 }
 
