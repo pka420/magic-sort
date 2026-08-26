@@ -48,6 +48,7 @@ class TokenResponse(BaseModel):
 
 
 class ScoreSubmitRequest(BaseModel):
+    level_id: int = Field(ge=1)
     total: int = Field(ge=0)
 
 

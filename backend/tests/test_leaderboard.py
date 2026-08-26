@@ -5,13 +5,13 @@ from app.database import SessionLocal
 from app.models import Score, User
 
 
-def add_player(username: str, total: int, verified: bool = True) -> None:
+def add_player(username: str, level_id: int, total: int, verified: bool = True) -> None:
     with SessionLocal() as db:
         user = User(username=username, auth_provider="local", is_verified=verified)
         db.add(user)
         db.commit()
         db.refresh(user)
-        db.add(Score(user_id=user.id, total=total))
+        db.add(Score(user_id=user.id, level_id=level_id, total=total))
         db.commit()
 
 
@@ -30,61 +30,69 @@ def register_and_login(
     ).json()["access_token"]
 
 
-def score_for(username: str) -> int:
+def score_for(username: str, level_id: int) -> int:
     with SessionLocal() as db:
         user = db.scalar(select(User).where(User.username == username))
-        return db.get(Score, user.id).total
+        return db.get(Score, (user.id, level_id)).total
 
 
 def test_leaderboard_is_empty_to_begin_with(client):
-    assert client.get("/api/leaderboard").json() == []
+    assert client.get("/api/leaderboard/1").json() == []
 
 
-def test_leaderboard_ranks_players_by_best_total(client):
-    add_player("alice", 5000)
-    add_player("bob", 9000)
-    add_player("carol", 7000)
+def test_leaderboard_ranks_players_by_best_total_on_a_level(client):
+    add_player("alice", 3, 5000)
+    add_player("bob", 3, 9000)
+    add_player("carol", 3, 7000)
 
-    entries = client.get("/api/leaderboard").json()
+    entries = client.get("/api/leaderboard/3").json()
 
     assert [e["username"] for e in entries] == ["bob", "carol", "alice"]
     assert [e["rank"] for e in entries] == [1, 2, 3]
     assert entries[0]["total"] == 9000
 
 
-def test_leaderboard_hides_unverified_players(client):
-    add_player("alice", 5000, verified=False)
-    add_player("bob", 9000)
+def test_leaderboard_keeps_each_level_to_itself(client):
+    add_player("alice", 1, 5000)
+    add_player("bob", 2, 9000)
 
-    entries = client.get("/api/leaderboard").json()
+    assert [e["username"] for e in client.get("/api/leaderboard/1").json()] == ["alice"]
+    assert [e["username"] for e in client.get("/api/leaderboard/2").json()] == ["bob"]
+
+
+def test_leaderboard_hides_unverified_players(client):
+    add_player("alice", 1, 5000, verified=False)
+    add_player("bob", 1, 9000)
+
+    entries = client.get("/api/leaderboard/1").json()
 
     assert [e["username"] for e in entries] == ["bob"]
 
 
 def test_submit_score_requires_a_token(client):
-    assert client.post("/api/scores", json={"total": 100}).status_code == 401
+    assert client.post("/api/scores", json={"level_id": 1, "total": 100}).status_code == 401
 
 
-def test_submit_score_keeps_the_best(client):
+def test_submit_score_keeps_the_best_on_a_level(client):
     token = register_and_login(client)
     headers = {"Authorization": f"Bearer {token}"}
 
-    client.post("/api/scores", json={"total": 300}, headers=headers)
-    client.post("/api/scores", json={"total": 900}, headers=headers)
-    client.post("/api/scores", json={"total": 500}, headers=headers)
+    client.post("/api/scores", json={"level_id": 2, "total": 300}, headers=headers)
+    client.post("/api/scores", json={"level_id": 2, "total": 900}, headers=headers)
+    client.post("/api/scores", json={"level_id": 2, "total": 500}, headers=headers)
 
-    assert score_for("alice") == 900
+    assert score_for("alice", 2) == 900
 
 
 def test_an_unverified_score_stays_hidden(client):
     token = register_and_login(client)
     client.post(
         "/api/scores",
-        json={"total": 900},
+        json={"level_id": 1, "total": 900},
         headers={"Authorization": f"Bearer {token}"},
     )
 
-    assert client.get("/api/leaderboard").json() == []
+    assert client.get("/api/leaderboard/1").json() == []
 
 
 def test_a_verified_score_appears(client):
@@ -95,9 +103,9 @@ def test_a_verified_score_appears(client):
 
     client.post(
         "/api/scores",
-        json={"total": 900},
+        json={"level_id": 1, "total": 900},
         headers={"Authorization": f"Bearer {token}"},
     )
 
-    entries = client.get("/api/leaderboard").json()
+    entries = client.get("/api/leaderboard/1").json()
     assert entries == [{"rank": 1, "username": "alice", "total": 900}]

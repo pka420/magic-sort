@@ -958,13 +958,11 @@ body::before {
 
 .leaderboard {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-  width: min(24rem, 100%);
+  flex-direction: row;
+  gap: 0;
+  width: min(52rem, 100%);
   max-height: 82vh;
-  overflow-y: auto;
-  padding: clamp(1.5rem, 5vw, 2.5rem);
+  overflow: hidden;
   text-align: center;
   border: 1px solid var(--glass-edge);
   border-radius: 1.5rem;
@@ -974,6 +972,89 @@ body::before {
     rgba(18, 10, 36, 0.92)
   );
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.leaderboard__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 8.5rem;
+  flex-shrink: 0;
+  padding: 1rem 0.6rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 18px,
+    black calc(100% - 18px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 18px,
+    black calc(100% - 18px),
+    transparent
+  );
+  border-right: 1px solid rgba(226, 214, 255, 0.12);
+  background: rgba(10, 6, 22, 0.35);
+}
+
+.leaderboard__nav::-webkit-scrollbar {
+  display: none;
+}
+
+.leaderboard__level-btn {
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+  font-family: var(--ui);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--parchment-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition:
+    background-color 0.15s var(--ease-out),
+    color 0.15s var(--ease-out),
+    border-color 0.15s var(--ease-out);
+}
+
+.leaderboard__level-btn:hover {
+  color: var(--parchment);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.leaderboard__level-btn:focus-visible {
+  outline: 2px solid var(--rune-bright);
+  outline-offset: 2px;
+}
+
+.leaderboard__level-btn--active {
+  color: var(--parchment);
+  border-color: var(--glass-edge);
+  background: linear-gradient(
+    165deg,
+    rgba(60, 36, 105, 0.9),
+    rgba(18, 10, 36, 0.92)
+  );
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.leaderboard__main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  overflow-y: auto;
 }
 
 .leaderboard__title {

@@ -21,19 +21,26 @@ const open = async (
 ) => {
   const user = userEvent.setup()
   render(
-    <Leaderboard board={board} username={null} isVerified={false} {...props} />
+    <Leaderboard
+      board={board}
+      username={null}
+      isVerified={false}
+      levelId={1}
+      levelCount={5}
+      {...props}
+    />
   )
   await user.click(screen.getByRole('button', { name: 'Leaderboard' }))
   return user
 }
 
 describe('Leaderboard', () => {
-  it('fetches the board when its button is pressed', async () => {
+  it('fetches the board for the level in play when its button is pressed', async () => {
     const board = makeBoard()
     await open(board)
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(board.refresh).toHaveBeenCalledTimes(1)
+    expect(board.refresh).toHaveBeenCalledWith(1)
   })
 
   it('lists players by rank, name and score', async () => {
@@ -59,11 +66,36 @@ describe('Leaderboard', () => {
     expect(screen.getByRole('listitem')).toHaveClass('leaderboard__row--mine')
   })
 
+  it('opens on the level in play and lets the player pick any other', async () => {
+    const board = makeBoard()
+    const user = await open(board, { levelId: 2 })
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
+
+    await user.click(screen.getByRole('tab', { name: 'Level 4' }))
+
+    expect(screen.getByRole('tab', { name: 'Level 4' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    expect(board.refresh).toHaveBeenCalledWith(4)
+  })
+
+  it('highlights the selected level the same as the leaderboard', async () => {
+    const board = makeBoard()
+    await open(board, { levelId: 3 })
+
+    expect(screen.getByRole('tab', { name: 'Level 3' })).toHaveClass(
+      'leaderboard__level-btn--active'
+    )
+  })
+
   it('tells a player there is nothing to see when the board is empty', async () => {
     await open(makeBoard())
 
     expect(
-      screen.getByText('No scores yet. Finish the campaign to take a place.')
+      screen.getByText('No scores yet. Sort this level to take a place.')
     ).toBeInTheDocument()
   })
 

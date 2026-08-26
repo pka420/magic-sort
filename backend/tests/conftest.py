@@ -23,10 +23,29 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app.database import Base, engine  # noqa: E402
 from app.main import app  # noqa: E402
 
+_BACKEND = Path(__file__).resolve().parents[1]
+
+
+def _stamp_head() -> None:
+    """Marks the freshly-built schema as the current migration.
+
+    Tables are laid out with create_all (fast, and it exercises the models),
+    then stamped so the app's startup `alembic upgrade head` finds nothing to
+    do and stays out of the test's way.
+    """
+    from alembic import command
+    from alembic.config import Config
+
+    config = Config()
+    config.set_main_option("script_location", str(_BACKEND / "migrations"))
+    command.stamp(config, "head")
+
 
 @pytest.fixture()
 def client():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+    _stamp_head()
     with TestClient(app) as test_client:
         yield test_client
+

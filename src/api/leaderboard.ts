@@ -6,17 +6,18 @@ export interface LeaderboardEntry {
   readonly total: number
 }
 
-export function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-  return request('/leaderboard')
+export function fetchLeaderboard(levelId: number): Promise<LeaderboardEntry[]> {
+  return request(`/leaderboard/${levelId}`)
 }
 
 export function submitScore(
   token: string,
+  levelId: number,
   total: number
 ): Promise<{ total: number }> {
   return request('/scores', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ total })
+    body: JSON.stringify({ level_id: levelId, total })
   })
 }

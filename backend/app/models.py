@@ -43,16 +43,17 @@ class User(Base):
 
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
-    score = relationship("Score", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    scores = relationship("Score", back_populates="user", cascade="all, delete-orphan")
 
 
 class Score(Base):
-    """One best overall total per player — the number on the leaderboard."""
+    """A player's best on one level — the number ranked on that level's board."""
 
     __tablename__ = "scores"
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    level_id = Column(Integer, primary_key=True)
     total = Column(Integer, nullable=False, default=0)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-    user = relationship("User", back_populates="score")
+    user = relationship("User", back_populates="scores")

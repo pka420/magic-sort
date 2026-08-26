@@ -96,14 +96,14 @@ export function Game({
   const canRestart = canPayForRestart({ banked: bankedScore, position })
 
   /*
-   * A solved campaign is a total worth posting. The board keeps the best it
-   * has seen, so posting again on a replay is a no-op, and while signed out
-   * the post is silently skipped.
+   * A solved level is a score worth posting. The board keeps the best it has
+   * seen on this level, so posting again on a replay is a no-op, and while
+   * signed out the post is silently skipped.
    */
   useEffect(() => {
-    if (!isLastLevel || !game.isSolved) return
-    submit(total)
-  }, [isLastLevel, game.isSolved, total, submit])
+    if (!game.isSolved) return
+    submit(level.id, game.score)
+  }, [game.isSolved, game.score, level.id, submit])
 
   /*
    * The ending nobody pressed for is asked after on every render rather than
@@ -225,6 +225,8 @@ export function Game({
         board={board}
         username={auth.user?.username ?? null}
         isVerified={auth.user?.isVerified ?? false}
+        levelId={level.id}
+        levelCount={levelCount}
       />
 
       <Menu>

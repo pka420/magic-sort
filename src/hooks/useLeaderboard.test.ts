@@ -36,6 +36,8 @@ afterEach(() => {
 })
 
 describe('useLeaderboard', () => {
+  const levelId = 5
+
   it('holds nothing until it is asked to fetch', () => {
     const { result } = renderHook(() => useLeaderboard(signedOut))
 
@@ -47,35 +49,36 @@ describe('useLeaderboard', () => {
     vi.mocked(fetchLeaderboard).mockResolvedValue([alice])
     const { result } = renderHook(() => useLeaderboard(signedOut))
 
-    act(() => result.current.refresh())
+    act(() => result.current.refresh(levelId))
 
     await waitFor(() => expect(result.current.entries).toEqual([alice]))
     expect(result.current.loading).toBe(false)
+    expect(fetchLeaderboard).toHaveBeenCalledWith(levelId)
   })
 
   it('carries what the server said when the board cannot be reached', async () => {
     vi.mocked(fetchLeaderboard).mockRejectedValue(new Error('Offline'))
     const { result } = renderHook(() => useLeaderboard(signedOut))
 
-    act(() => result.current.refresh())
+    act(() => result.current.refresh(levelId))
 
     await waitFor(() => expect(result.current.error).toBe('Offline'))
   })
 
-  it('posts a signed-in player score', () => {
+  it('posts a signed-in player score on the level', () => {
     vi.mocked(submitScore).mockResolvedValue({ total: 900 })
     const auth = { ...signedOut, token: 'tok' }
     const { result } = renderHook(() => useLeaderboard(auth))
 
-    act(() => result.current.submit(900))
+    act(() => result.current.submit(levelId, 900))
 
-    expect(submitScore).toHaveBeenCalledWith('tok', 900)
+    expect(submitScore).toHaveBeenCalledWith('tok', levelId, 900)
   })
 
   it('stays silent when there is nobody signed in', () => {
     const { result } = renderHook(() => useLeaderboard(signedOut))
 
-    act(() => result.current.submit(900))
+    act(() => result.current.submit(levelId, 900))
 
     expect(submitScore).not.toHaveBeenCalled()
   })

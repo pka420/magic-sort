@@ -37,12 +37,28 @@ env/bin/uvicorn app.main:app --reload
 - Health check: `GET /api/health`
 - Interactive docs: <http://127.0.0.1:8000/docs>
 
-Tables are created on startup, so there is no migration step for a fresh
-database.
-
 The game's dev server proxies `/api` to this port (`vite.config.ts`), so
 running `npm run dev` from the repository root alongside this backend is all
 that is needed to play against it locally.
+
+## Migrations
+
+The schema lives in `migrations/` and is managed by
+[Alembic](https://alembic.sqlalchemy.org). The database URL is read from
+`.env` (`DATABASE_URL`), not from `alembic.ini`.
+
+Migrations are applied automatically on startup, so a fresh database is ready
+the moment the server boots. When a model changes, generate a migration and
+review it before it ships:
+
+```bash
+env/bin/alembic revision --autogenerate -m "add per-level scores"
+env/bin/alembic upgrade head   # or just restart — startup applies it too
+```
+
+Alembic compares `app/models.py` against the live database, so run the
+`revision` command against a database that is already at the latest migration;
+otherwise it will re-detect old differences as new ones.
 
 ## Configuration
 

@@ -9,20 +9,38 @@ interface LeaderboardProps {
   readonly username: string | null
   /** Whether the signed-in player's scores are allowed onto the board. */
   readonly isVerified: boolean
+  /** The level in play, the board opens on it by default. */
+  readonly levelId: number
+  /** How many levels there are, so the board can offer every one. */
+  readonly levelCount: number
 }
 
 /*
- * The overall leaderboard, opened from its own button to the left of the menu.
- * The button is always there — anyone can read the board — but a score only
- * lands on it once a signed-in, verified player has one to post.
+ * The leaderboard, opened from its own button to the left of the menu. The
+ * button is always there — anyone can read the board — and the board can page
+ * through every level rather than only the one in play, so a score put up on
+ * an earlier level is always findable again.
  */
-export function Leaderboard({ board, username, isVerified }: LeaderboardProps) {
+export function Leaderboard({
+  board,
+  username,
+  isVerified,
+  levelId,
+  levelCount
+}: LeaderboardProps) {
   const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState(levelId)
   const titleId = useId()
 
   const openDialog = () => {
+    setSelected(levelId)
     setOpen(true)
-    board.refresh()
+    board.refresh(levelId)
+  }
+
+  const chooseLevel = (next: number) => {
+    setSelected(next)
+    board.refresh(next)
   }
 
   /* Escape closes it, the way every dialog on this screen does. */
@@ -70,30 +88,60 @@ export function Leaderboard({ board, username, isVerified }: LeaderboardProps) {
               transition={{ type: 'spring', stiffness: 300, damping: 24 }}
               onClick={(event) => event.stopPropagation()}
             >
-              <h2 className='leaderboard__title' id={titleId}>
-                Leaderboard
-              </h2>
-
-              <Board
-                board={board}
-                username={username}
-                isVerified={isVerified}
-              />
-
-              <button
-                type='button'
-                className='button button--quiet'
-                autoFocus
-                onClick={() => setOpen(false)}
+              <div
+                className='leaderboard__nav'
+                role='tablist'
+                aria-label='Levels'
               >
-                Close
-              </button>
+                {levels(levelCount).map((id) => (
+                  <button
+                    key={id}
+                    type='button'
+                    role='tab'
+                    aria-selected={id === selected}
+                    className={
+                      id === selected
+                        ? 'leaderboard__level-btn leaderboard__level-btn--active'
+                        : 'leaderboard__level-btn'
+                    }
+                    onClick={() => chooseLevel(id)}
+                  >
+                    Level {id}
+                  </button>
+                ))}
+              </div>
+
+              <div className='leaderboard__main'>
+                <h2 className='leaderboard__title' id={titleId}>
+                  Leaderboard
+                </h2>
+
+                <Board
+                  board={board}
+                  username={username}
+                  isVerified={isVerified}
+                />
+
+                <button
+                  type='button'
+                  className='button button--quiet'
+                  autoFocus
+                  onClick={() => setOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
   )
+}
+
+/** One through `count`, the way a player counts levels. */
+function levels(count: number): number[] {
+  return Array.from({ length: count }, (_, index) => index + 1)
 }
 
 function Board({
@@ -127,7 +175,7 @@ function Board({
 
       {board.entries.length === 0 ? (
         <p className='leaderboard__empty'>
-          No scores yet. Finish the campaign to take a place.
+          No scores yet. Sort this level to take a place.
         </p>
       ) : (
         <ol className='leaderboard__list'>
