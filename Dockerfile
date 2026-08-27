@@ -1,8 +1,8 @@
 # Frontend — React + Vite (static build served by nginx)
-# Mirrors the production nginx setup in infra/nginx.conf:
-#   /api/*  -> http://backend:8000   (docker-compose service name)
-#   /assets/* -> hashed, immutable
-#   /*       -> SPA fallback to /index.html
+# Serves the Vite build and proxies /api to the backend container via Docker
+# DNS. In production the host nginx (sites-enabled/magic-sort) proxies
+# separately: /api/ -> 127.0.0.1:8000 and / -> 127.0.0.1:3000. This internal
+# proxy keeps `docker compose up` usable without the host nginx (local dev).
 
 FROM node:25.5.0-alpine AS build
 WORKDIR /app

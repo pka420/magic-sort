@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Installs magic-sort's nginx site block into the host's single nginx and
-# reloads it. Every site on the box ships one of these; each drops an
-# independent server block into /etc/nginx/conf.d and they share the one nginx.
+# Installs magic-sort's host nginx site into sites-available/sites-enabled.
+#
+# Each site on the VPS owns one file in /etc/nginx/sites-available, enabled
+# via a symlink in sites-enabled (Debian layout). All sites share the host's
+# single nginx — see /etc/nginx/nginx.conf (`include sites-enabled/*`).
 #
 #   sudo ./infra/install-nginx.sh
 #
-# Serves the built game from /srv/magic-sort/dist and proxies /api to the
-# backend on 127.0.0.1:8000. Idempotent: run it again after changing nginx.conf.
+# Host nginx is a plain reverse proxy to Docker: / -> 127.0.0.1:3000 (frontend
+# container) and /api/ -> 127.0.0.1:8000 (backend container). No files are
+# served from the host; `docker compose up -d` must be running.
+# Idempotent: run again after changing infra/nginx.conf.
 
 set -euo pipefail
 
@@ -16,11 +20,23 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC="$HERE/nginx.conf"
+DEST_AVAILABLE="/etc/nginx/sites-available/magic-sort"
+DEST_ENABLED="/etc/nginx/sites-enabled/magic-sort"
+OLD_CONF_D="/etc/nginx/conf.d/magic-sort.conf"
 
-install -m 644 "$HERE/nginx.conf" /etc/nginx/conf.d/magic-sort.conf
+# Install to sites-available and enable via symlink (Debian convention).
+install -m 644 "$SRC" "$DEST_AVAILABLE"
+ln -sf "$DEST_AVAILABLE" "$DEST_ENABLED"
+
+# Clean up legacy location from before the sites-enabled migration.
+if [ -f "$OLD_CONF_D" ]; then
+  rm -f "$OLD_CONF_D"
+  echo "Removed legacy $OLD_CONF_D"
+fi
 
 # Refuse to leave nginx broken: test first, reload only if the config is sound.
 nginx -t
 systemctl reload nginx
 
-echo "magic-sort nginx block installed to /etc/nginx/conf.d/magic-sort.conf"
+echo "magic-sort nginx site installed to $DEST_AVAILABLE (enabled via $DEST_ENABLED)"

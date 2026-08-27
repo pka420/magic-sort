@@ -12,13 +12,14 @@ services:
     environment:
       # Persist SQLite to the named volume; override in .env to use Postgres etc.
       DATABASE_URL: sqlite:////data/magic_sort.db
-      # Same-domain nginx proxy makes CORS unnecessary inside compose
-      FRONTEND_URL: http://localhost:3000
+      # Production domain; override in backend/.env for local dev (http://localhost:3000)
+      FRONTEND_URL: https://magic-sort.from-delhi.net
     volumes:
       - sqlite_data:/data
     ports:
-      # Exposed for direct API access / debugging; frontend talks via internal DNS
-      - "8000:8000"
+      # Bound to loopback only — public traffic goes through host nginx
+      # (sites-enabled/magic-sort). Keeps backend off the open internet.
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
@@ -36,7 +37,9 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "3000:80"
+      # Bound to loopback only — host nginx (sites-enabled) proxies / -> :3000.
+      # Direct access still works via ssh tunnel for debugging.
+      - "127.0.0.1:3000:80"
     restart: unless-stopped
 
 volumes:
