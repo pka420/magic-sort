@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+.git
+.gitignore
+backend/.venv
+backend/venv
+backend/env
+backend/__pycache__
+backend/.pytest_cache
+backend/magic_sort.db
+*.pyc
+.mise.local.toml
+mise.local.toml

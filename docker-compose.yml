@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: magic-sort-backend
+    # Uses backend/.env if present (gitignored). Copy from backend/.env.example
+    # and set SECRET_KEY, GOOGLE_*, SMTP_*, etc. Values here are fallbacks for
+    # local dev so `docker compose up` works with no .env at all.
+    env_file:
+      - ./backend/.env
+    environment:
+      # Persist SQLite to the named volume; override in .env to use Postgres etc.
+      DATABASE_URL: sqlite:////data/magic_sort.db
+      # Same-domain nginx proxy makes CORS unnecessary inside compose
+      FRONTEND_URL: http://localhost:3000
+    volumes:
+      - sqlite_data:/data
+    ports:
+      # Exposed for direct API access / debugging; frontend talks via internal DNS
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: magic-sort-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
