@@ -43,7 +43,7 @@ class Settings:
     # /api proxy. Empty by default: the same-domain proxy makes CORS moot.
     cors_origins: list[str] = _list("CORS_ORIGINS")
 
-    email_enabled: bool = _bool("EMAIL_ENABLED")
+    email_enabled: bool = _bool("EMAIL_ENABLED", True)
     smtp_server: str = os.getenv("SMTP_SERVER", "")
     smtp_port: int = _int("SMTP_PORT", 587)
     smtp_user: str = os.getenv("SMTP_USER", "")

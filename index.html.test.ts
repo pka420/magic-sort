@@ -69,4 +69,43 @@ describe('the published page', () => {
     // saying so: the message arrives with a title and no picture.
     expect(statSync(join(ROOT, 'public', CARD)).size).toBeLessThan(300_000)
   })
+
+  it('tells crawlers to index the page and advertises the sitemap', () => {
+    expect(contentOf('meta[name="robots"]')).toMatch(/index/)
+    expect(contentOf('meta[name="robots"]')).toMatch(/follow/)
+    expect(
+      page.querySelector('link[rel="sitemap"]')?.getAttribute('href')
+    ).toBe('/sitemap.xml')
+    // Also present via robots.txt – read plain text, not DOM.
+    const robots = readFileSync(join(ROOT, 'public', 'robots.txt'), 'utf8')
+    expect(robots).toMatch(/Allow: \//)
+    expect(robots).toMatch(
+      /Sitemap: https:\/\/magic-sort\.from-delhi\.net\/sitemap\.xml/
+    )
+    expect(robots).toMatch(/Disallow: \/api\//)
+  })
+
+  it('ships a valid sitemap pointing at the canonical page', () => {
+    const sitemap = readFileSync(join(ROOT, 'public', 'sitemap.xml'), 'utf8')
+    expect(sitemap).toContain(`<loc>${PAGE_URL}</loc>`)
+    expect(sitemap).toContain('<urlset')
+  })
+
+  it('exposes structured data so search results can render rich results', () => {
+    const jsonLd =
+      page.querySelector('script[type="application/ld+json"]')?.textContent ??
+      ''
+    expect(jsonLd).not.toBe('')
+    const data = JSON.parse(jsonLd) as Record<string, unknown>
+    expect(data['@type']).toBe('VideoGame')
+    expect(data['name']).toBe('Magic Sort')
+    expect(data['url']).toBe(PAGE_URL)
+  })
+
+  it('sets SEO meta tags crawlers expect', () => {
+    expect(contentOf('meta[name="keywords"]')).not.toBe('')
+    expect(contentOf('meta[name="author"]')).not.toBe('')
+    expect(contentOf('meta[property="og:locale"]')).not.toBe('')
+    expect(page.querySelector('title')?.textContent).toMatch(/Magic Sort/)
+  })
 })

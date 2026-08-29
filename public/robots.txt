@@ -1,0 +1,9 @@
+# Magic Sort — robots.txt
+# Allows all crawlers; sitemap is the single-page app entry.
+User-agent: *
+Allow: /
+
+# Disallow API and internal endpoints from indexing
+Disallow: /api/
+
+Sitemap: https://magic-sort.from-delhi.net/sitemap.xml

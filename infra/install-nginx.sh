@@ -24,6 +24,19 @@ SRC="$HERE/nginx.conf"
 DEST_AVAILABLE="/etc/nginx/sites-available/magic-sort"
 DEST_ENABLED="/etc/nginx/sites-enabled/magic-sort"
 OLD_CONF_D="/etc/nginx/conf.d/magic-sort.conf"
+NGINX_CONF="/etc/nginx/nginx.conf"
+
+# Ensure host nginx.conf includes sites-enabled (AlmaLinux omits it).
+if ! grep -q "include /etc/nginx/sites-enabled" "$NGINX_CONF" 2>/dev/null; then
+  echo "Adding 'include /etc/nginx/sites-enabled/*;' to $NGINX_CONF"
+  if grep -q "include /etc/nginx/conf.d" "$NGINX_CONF"; then
+    sed -i '/include \/etc\/nginx\/conf.d/a \    include /etc/nginx/sites-enabled/*;' "$NGINX_CONF"
+  else
+    sed -i '/http {/a \    include /etc/nginx/sites-enabled/*;' "$NGINX_CONF"
+  fi
+fi
+
+mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 
 # Install to sites-available and enable via symlink (Debian convention).
 install -m 644 "$SRC" "$DEST_AVAILABLE"
