@@ -108,4 +108,32 @@ describe('the published page', () => {
     expect(contentOf('meta[property="og:locale"]')).not.toBe('')
     expect(page.querySelector('title')?.textContent).toMatch(/Magic Sort/)
   })
+
+  it('includes Google AdSense verification script and ads.txt', () => {
+    const adsense = page.querySelector(
+      'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+    )
+    expect(adsense).not.toBeNull()
+    expect(adsense?.getAttribute('src')).toContain('ca-pub-8317099814214393')
+    expect(adsense?.getAttribute('crossorigin')).toBe('anonymous')
+    expect(adsense?.hasAttribute('async')).toBe(true)
+
+    const adsTxt = readFileSync(join(ROOT, 'public', 'ads.txt'), 'utf8')
+    expect(adsTxt).toContain(
+      'google.com, pub-8317099814214393, DIRECT, f08c47fec0942fa0'
+    )
+  })
+
+  it('ships a privacy policy and terms required for AdSense', () => {
+    for (const file of ['privacy.html', 'terms.html']) {
+      expect(readdirSync(join(ROOT, 'public'))).toContain(file)
+      const html = readFileSync(join(ROOT, 'public', file), 'utf8')
+      expect(html).toContain('https://magic-sort.from-delhi.net')
+    }
+    const privacy = readFileSync(join(ROOT, 'public', 'privacy.html'), 'utf8')
+    expect(privacy).toContain('Privacy Policy')
+    expect(privacy).toContain('Google AdSense')
+    expect(privacy).toContain('ca-pub-8317099814214393')
+    expect(privacy).toContain('/terms.html')
+  })
 })

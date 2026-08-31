@@ -30,6 +30,7 @@ function SignedOut({ auth }: { auth: Auth }) {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [agreed, setAgreed] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -38,6 +39,12 @@ function SignedOut({ auth }: { auth: Auth }) {
     event.preventDefault()
     setNotice(null)
     setError(null)
+    if (mode === 'register' && !agreed) {
+      setError(
+        'You must agree to the Privacy Policy and Terms to create an account.'
+      )
+      return
+    }
     setBusy(true)
     try {
       if (mode === 'register') {
@@ -46,6 +53,7 @@ function SignedOut({ auth }: { auth: Auth }) {
           'Account created. Check your email to verify it, then sign in.'
         )
         setPassword('')
+        setAgreed(false)
         setMode('signin')
       } else if (mode === 'forgot') {
         await auth.forgotPassword(email)
@@ -65,6 +73,7 @@ function SignedOut({ auth }: { auth: Auth }) {
     setMode(next)
     setNotice(null)
     setError(null)
+    setAgreed(false)
   }
 
   const switchMode = () => {
@@ -125,6 +134,28 @@ function SignedOut({ auth }: { auth: Auth }) {
         </label>
       )}
 
+      {mode === 'register' && (
+        <label className='account__consent'>
+          <input
+            type='checkbox'
+            checked={agreed}
+            onChange={(event) => setAgreed(event.target.checked)}
+            required
+            aria-label='Agree to Privacy Policy and Terms'
+          />
+          <span>
+            I agree to the{' '}
+            <a href='/privacy.html' target='_blank' rel='noopener noreferrer'>
+              Privacy Policy
+            </a>{' '}
+            and{' '}
+            <a href='/terms.html' target='_blank' rel='noopener noreferrer'>
+              Terms
+            </a>
+          </span>
+        </label>
+      )}
+
       {notice !== null && <p className='account__note'>{notice}</p>}
       {error !== null && (
         <p className='account__error' role='alert'>
@@ -135,7 +166,7 @@ function SignedOut({ auth }: { auth: Auth }) {
       <button
         type='submit'
         className='button button--primary button--wide'
-        disabled={busy}
+        disabled={busy || (mode === 'register' && !agreed)}
       >
         {busy
           ? 'Please wait…'
@@ -176,9 +207,28 @@ function SignedOut({ auth }: { auth: Auth }) {
         </>
       )}
 
-      <button type='button' className='button' onClick={auth.signInWithGoogle}>
+      <button
+        type='button'
+        className='button'
+        disabled={mode === 'register' && !agreed}
+        onClick={() => {
+          if (mode === 'register' && !agreed) {
+            setError(
+              'You must agree to the Privacy Policy and Terms to create an account.'
+            )
+            return
+          }
+          auth.signInWithGoogle()
+        }}
+        aria-disabled={mode === 'register' && !agreed}
+      >
         Sign in with Google
       </button>
+      {mode === 'register' && !agreed && (
+        <p className='account__note'>
+          You must agree to the Privacy Policy and Terms before continuing.
+        </p>
+      )}
     </form>
   )
 }

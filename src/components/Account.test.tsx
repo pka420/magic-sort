@@ -66,12 +66,50 @@ describe('Account', () => {
     await user.type(screen.getByLabelText('Username'), 'alice')
     await user.type(screen.getByLabelText('Email'), 'alice@example.com')
     await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.click(screen.getByLabelText('Agree to Privacy Policy and Terms'))
     await user.click(screen.getByRole('button', { name: 'Create account' }))
 
     expect(auth.register).toHaveBeenCalledWith(
       'alice',
       'alice@example.com',
       'password123'
+    )
+  })
+
+  it('requires privacy consent before creating an account', async () => {
+    const auth = makeAuth()
+    const user = userEvent.setup()
+    render(<Account auth={auth} />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'New here? Make an account' })
+    )
+    expect(
+      screen.getByRole('button', { name: 'Create account' })
+    ).toBeDisabled()
+    expect(
+      screen.getByLabelText('Agree to Privacy Policy and Terms')
+    ).not.toBeChecked()
+
+    // Disabled button cannot be clicked; agreeing enables it.
+    await user.click(screen.getByLabelText('Agree to Privacy Policy and Terms'))
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeEnabled()
+  })
+
+  it('links to Privacy Policy and Terms when registering', async () => {
+    const user = userEvent.setup()
+    render(<Account auth={makeAuth()} />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'New here? Make an account' })
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'Privacy Policy' })
+    ).toHaveAttribute('href', '/privacy.html')
+    expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute(
+      'href',
+      '/terms.html'
     )
   })
 

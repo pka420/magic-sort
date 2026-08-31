@@ -1451,6 +1451,66 @@ body::before {
   gap: 0.4rem;
 }
 
+/* ---------- Site footer (legal) ---------- */
+
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.5rem 1rem 2rem;
+  text-align: center;
+  border-top: 1px solid rgba(226, 214, 255, 0.12);
+}
+
+.site-footer__links {
+  font-size: 0.76rem;
+  color: var(--parchment-dim);
+}
+
+.site-footer__links a {
+  color: var(--parchment-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer__links a:hover,
+.site-footer__links a:focus-visible {
+  color: var(--parchment);
+}
+
+.site-footer__copy {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--parchment-dim);
+}
+
+.site-footer__copy a {
+  color: inherit;
+}
+
+/* Consent line inside registration */
+.account__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--parchment-dim);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+.account__consent input[type='checkbox'] {
+  margin-top: 0.2rem;
+  accent-color: var(--rune);
+}
+
+.account__consent a {
+  color: var(--rune-bright);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
