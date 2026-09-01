@@ -100,6 +100,12 @@ body::before {
   }
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
 .game {
   position: relative;
   display: flex;
@@ -107,11 +113,12 @@ body::before {
   align-items: center;
   justify-content: center;
   gap: clamp(1.25rem, 3vw, 2.25rem);
-  min-height: 100dvh;
-  /* The extra headroom keeps the board clear of the hanging title and score. */
-  padding: clamp(9rem, 26vh, 14.5rem) 1.25rem clamp(1.5rem, 4vw, 3rem);
+  flex: 1;
+  width: 100%;
   max-width: 60rem;
   margin-inline: auto;
+  /* The extra headroom keeps the board clear of the hanging title and score. */
+  padding: clamp(9rem, 26vh, 14.5rem) 1.25rem clamp(1.5rem, 4vw, 3rem);
 }
 
 /* ---------- The blog's mark ---------- */
@@ -1454,11 +1461,12 @@ body::before {
 /* ---------- Site footer (legal) ---------- */
 
 .site-footer {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  padding: 1.5rem 1rem 2rem;
+  padding: 1rem 1rem 1.25rem;
   text-align: center;
   border-top: 1px solid rgba(226, 214, 255, 0.12);
 }

@@ -9,7 +9,7 @@ export function App() {
   const auth = useAuth()
 
   return (
-    <>
+    <div className='app'>
       <Game
         level={campaign.level}
         position={campaign.position}
@@ -24,6 +24,6 @@ export function App() {
         onBeginAgain={campaign.beginAgain}
       />
       <Footer />
-    </>
+    </div>
   )
 }

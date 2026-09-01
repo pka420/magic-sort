@@ -19,9 +19,9 @@ services:
     ports:
       # Bound to loopback only — public traffic goes through host nginx
       # (sites-enabled/magic-sort). Keeps backend off the open internet.
-      - "127.0.0.1:8000:8000"
+      - '127.0.0.1:8000:8000'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/api/health']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,7 +39,7 @@ services:
     ports:
       # Bound to loopback only — host nginx (sites-enabled) proxies / -> :3000.
       # Direct access still works via ssh tunnel for debugging.
-      - "127.0.0.1:3000:80"
+      - '127.0.0.1:3000:80'
     restart: unless-stopped
 
 volumes:
