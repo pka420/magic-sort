@@ -1497,6 +1497,39 @@ body::before {
   color: inherit;
 }
 
+.about-game {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3.5rem;
+  font-family: var(--display);
+  color: var(--parchment);
+  line-height: 1.65;
+}
+
+.about-game h1 {
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin: 0 0 0.75rem;
+}
+
+.about-game h2 {
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 1.75rem 0 0.5rem;
+}
+
+.about-game p {
+  margin: 0 0 0.85rem;
+  color: var(--parchment-dim);
+}
+
+.about-game a {
+  color: var(--rune-bright);
+}
+
 /* Consent line inside registration */
 .account__consent {
   display: flex;

@@ -93,13 +93,54 @@
   </head>
   <body>
     <div id="root"></div>
-    <noscript>
+    <article class="about-game">
+      <h1>Magic Sort</h1>
       <p>
-        Magic Sort is a liquid-sorting puzzle: pour mixed colours between glass
-        flasks until each one holds a single pure colour. Playing it needs
-        JavaScript, which this browser has turned off.
+        Magic Sort is a free liquid-sorting puzzle in the browser. Coloured
+        elixirs sit stacked in glass flasks. Pour them until every flask holds a
+        single pure colour. There is nothing to install: open the page and play.
       </p>
-    </noscript>
+      <h2>How to play</h2>
+      <p>
+        Tap a flask to pick it up, then tap another to pour. A pour is legal
+        when the target is empty, or its top layer matches what you are pouring,
+        and it has room. The whole unbroken run of the top colour moves at once.
+        Sort every flask to finish the level. Solving a level opens the next.
+      </p>
+      <p>
+        Fifty handcrafted levels make up the campaign. Early levels teach the
+        pour with spare flasks; later ones take the spare room away, mix flask
+        heights, and scatter free layers so there is nowhere to dump a whole
+        run. Eight colours are in play by the end, on boards of nine flasks.
+      </p>
+      <h2>Scoring</h2>
+      <p>
+        Each level pays more than the one before it. The first is worth 1,000
+        points and the fiftieth 50,000; a flawless campaign totals 1,275,000.
+        Extra pours past the shortest solution cut the payout. Restarting a
+        level costs a tenth of that level from your banked score. Walking back
+        to level one keeps what you have earned but charges the campaign behind
+        you. If you cannot pay, the run ends.
+      </p>
+      <h2>Who made this</h2>
+      <p>
+        Magic Sort is built by
+        <a href="https://piyushkhurana.from-delhi.net/">Piyush Khurana</a>
+        and published at
+        <a href="https://magic-sort.from-delhi.net/"
+          >magic-sort.from-delhi.net</a
+        >, part of <a href="https://from-delhi.net/">from-delhi.net</a>. Play is
+        free. An account is only needed if you want your name on the
+        leaderboards. Questions:
+        <a href="mailto:pka420@proton.me">pka420@proton.me</a>.
+      </p>
+      <noscript>
+        <p>
+          Playing the puzzle needs JavaScript, which this browser has turned
+          off. The rules above still stand; turn JavaScript on to pour.
+        </p>
+      </noscript>
+    </article>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

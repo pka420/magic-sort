@@ -124,6 +124,18 @@ describe('the published page', () => {
     )
   })
 
+  it('puts How to play in the document so a crawler need not run the script', () => {
+    const about = page.querySelector('.about-game')
+    expect(about).not.toBeNull()
+    expect(about?.closest('#root')).toBeNull()
+    const text = about?.textContent ?? ''
+    expect(text).toMatch(/How to play/i)
+    expect(text).toMatch(/fifty handcrafted levels/i)
+    expect(text).toMatch(/Piyush Khurana/)
+    expect(text).toMatch(/pka420@proton\.me/)
+    expect(text.length).toBeGreaterThan(800)
+  })
+
   it('ships a privacy policy and terms required for AdSense', () => {
     for (const file of ['privacy.html', 'terms.html']) {
       expect(readdirSync(join(ROOT, 'public'))).toContain(file)
